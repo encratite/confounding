@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+	<GlobalPreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</GlobalPreprocessorDefinitions>
+	<YamlCppInclude>D:\Data\yaml-cpp\include</YamlCppInclude>
+	<YamlCppLib>D:\Data\yaml-cpp\build\Release\yaml-cpp.lib</YamlCppLib>
+	<YamlCppDll>D:\Data\yaml-cpp\build\Release\yaml-cpp.dll</YamlCppDll>
+	<FastCppCsvParserInclude>D:\Data</FastCppCsvParserInclude>
+	<ZLibInclude>D:\Data\zlib</ZLibInclude>
+    <ZLibLib>D:\Data\zlib\build\Release\z.lib</ZLibLib>
+	<ZLibDll>D:\Data\zlib\build\Release\z.dll</ZLibDll>
+  </PropertyGroup>
+</Project>
