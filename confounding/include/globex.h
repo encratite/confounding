@@ -2,6 +2,7 @@
 
 #include <string>
 #include <optional>
+#include <istream>
 
 namespace confounding {
 	class GlobexCode {
@@ -11,8 +12,9 @@ namespace confounding {
 		std::optional<char> month;
 		std::optional<unsigned> year;
 
+		GlobexCode();
 		GlobexCode(std::string root, char month, unsigned year);
-		GlobexCode(std::string symbol);
+		GlobexCode(const std::string& symbol);
 		bool operator==(const GlobexCode& other) const;
 		bool operator<(const GlobexCode& other) const;
 		bool operator>(const GlobexCode& other) const;

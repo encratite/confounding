@@ -21,6 +21,7 @@ namespace YAML {
 	};
 
 	template <typename T>
+	requires std::is_default_constructible_v<T>
 	struct convert<std::optional<T>> {
 		static bool decode(const Node& node, std::optional<T>& output) {
 			if (!node || node.IsNull()) {

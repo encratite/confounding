@@ -10,6 +10,8 @@ namespace confounding {
 	public:
 		ContractConfiguration();
 		static const ContractConfiguration& get();
+		std::vector<Contract>::const_iterator begin() const;
+		std::vector<Contract>::const_iterator end() const;
 
 	private:
 		bool _initialized;

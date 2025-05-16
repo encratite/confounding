@@ -1,7 +1,7 @@
 #include <memory>
-#include <sstream>
 #include <chrono>
 #include <cstdio>
+#include <format>
 
 #include "common.h"
 #include "exception.h""
@@ -10,9 +10,8 @@ namespace confounding {
 	std::shared_ptr<char> read_file(const std::string& path) {
 		FILE* file = std::fopen(path.c_str(), "rb");
 		if (file == nullptr) {
-			std::stringstream stream;
-			stream << "Failed to open file (" << strerror(errno) << ")";
-			throw Exception(stream.str());
+			std::string error = std::format("Failed to open file ({})", strerror(errno));
+			throw Exception(error);
 		}
 		std::fseek(file, 0, SEEK_END);
 		std::size_t file_size = std::ftell(file);

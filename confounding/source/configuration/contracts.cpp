@@ -23,6 +23,14 @@ namespace confounding {
 		return configuration;
 	}
 
+	std::vector<Contract>::const_iterator ContractConfiguration::begin() const {
+		return _contracts.cbegin();
+	}
+
+	std::vector<Contract>::const_iterator ContractConfiguration::end() const {
+		return _contracts.cend();
+	}
+
 	void ContractConfiguration::load() {
 		if (_initialized)
 			return;

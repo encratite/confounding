@@ -1,5 +1,5 @@
 #include <regex>
-#include <sstream>
+#include <format>
 
 #include "globex.h"
 #include "exception.h"
@@ -9,19 +9,21 @@ namespace confounding {
 		const std::regex globex_code_pattern("^([A-Z0-9]{2,})([FGHJKMNQUVXZ])([0-9]{2})$");
 	}
 
+	GlobexCode::GlobexCode() {
+	}
+
 	GlobexCode::GlobexCode(std::string root, char month, unsigned year)
 		: root(std::move(root)),
 		month(month),
 		year(year) {
 	}
 
-	GlobexCode::GlobexCode(std::string symbol)
-		: symbol(std::move(symbol)) {
+	GlobexCode::GlobexCode(const std::string& symbol)
+		: symbol(symbol) {
 		std::smatch matches;
 		if (!std::regex_match(symbol, matches, globex_code_pattern)) {
-			std::stringstream stream;
-			stream << "Unable to parse Globex code: " << symbol;
-			throw Exception(stream.str());
+			std::string message = std::format("Unable to parse Globex code: {}", symbol);
+			throw Exception(message);
 		}
 		root = matches[1];
 		std::string month_string = matches[2];

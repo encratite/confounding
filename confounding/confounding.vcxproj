@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\archive.h" />
     <ClInclude Include="include\common.h" />
     <ClInclude Include="include\configuration\base.h" />
     <ClInclude Include="include\configuration\contracts.h" />
