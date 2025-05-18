@@ -10,7 +10,10 @@ namespace confounding {
 	class ContractFilterConfiguration {
 	public:
 		ContractFilterConfiguration();
+
 		static const ContractFilterConfiguration& get();
+
+		const ContractFilter& get_filter(const std::string& symbol) const;
 
 	private:
 		bool _initialized;

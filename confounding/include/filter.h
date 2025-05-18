@@ -13,7 +13,8 @@ namespace confounding {
 	class ContractFilter {
 	public:
 		ContractFilter(
-			std::optional<std::string> exchange_symbol,
+			std::string barchart_symbol,
+			std::string exchange_symbol,
 			std::optional<unsigned> f_records_limit,
 			bool enable_fy_records,
 			std::optional<GlobexCode> legacy_cutoff,
@@ -24,9 +25,14 @@ namespace confounding {
 			std::optional<Date> cutoff_date
 		);
 		bool include_record(const Time& time, const GlobexCode& globex_code) const;
+		const std::string& barchart_symbol() const;
+		const std::string& exchange_symbol() const;
+		const std::optional<unsigned>& f_records_limit() const;
+		bool enable_fy_records() const;
 
 	private:
-		std::optional<std::string> _exchange_symbol;
+		std::string _barchart_symbol;
+		std::string _exchange_symbol;
 		std::optional<unsigned> _f_records_limit;
 		bool _enable_fy_records;
 		std::optional<GlobexCode> _legacy_cutoff;

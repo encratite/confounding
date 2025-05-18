@@ -4,7 +4,7 @@
 #include <format>
 
 #include "common.h"
-#include "exception.h""
+#include "exception.h"
 
 namespace confounding {
 	std::shared_ptr<char> read_file(const std::string& path) {
@@ -32,6 +32,16 @@ namespace confounding {
 			throw Exception(error_stream.str());
 		}
 		return date;
+	}
+
+	std::string get_date_string(const Date& date) {
+		std::string output = std::format(
+			"{:04}-{:02}-{:02}",
+			static_cast<int>(date.year()),
+			static_cast<unsigned>(date.month()),
+			static_cast<unsigned>(date.day())
+		);
+		return output;
 	}
 
 	bool operator<(const Time& time, const Date& date) {

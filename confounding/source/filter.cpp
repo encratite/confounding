@@ -3,7 +3,8 @@
 
 namespace confounding {
 	ContractFilter::ContractFilter(
-		std::optional<std::string> exchange_symbol,
+		std::string barchart_symbol,
+		std::string exchange_symbol,
 		std::optional<unsigned> f_records_limit,
 		bool enable_fy_records,
 		std::optional<GlobexCode> legacy_cutoff,
@@ -13,7 +14,8 @@ namespace confounding {
 		FilterMonths exclude_months,
 		std::optional<Date> cutoff_date
 	)
-		: _exchange_symbol(std::move(exchange_symbol)),
+		: _barchart_symbol(std::move(barchart_symbol)),
+		_exchange_symbol(std::move(exchange_symbol)),
 		_f_records_limit(std::move(f_records_limit)),
 		_enable_fy_records(enable_fy_records),
 		_legacy_cutoff(std::move(legacy_cutoff)),
@@ -44,5 +46,21 @@ namespace confounding {
 		else if (_exclude_months)
 			return _exclude_months->contains(*globex_code.month);
 		return true;
+	}
+
+	const std::string& ContractFilter::barchart_symbol() const {
+		return _barchart_symbol;
+	}
+
+	const std::string& ContractFilter::exchange_symbol() const {
+		return _exchange_symbol;
+	}
+
+	const std::optional<unsigned>& ContractFilter::f_records_limit() const {
+		return _f_records_limit;
+	}
+
+	bool ContractFilter::enable_fy_records() const {
+		return _enable_fy_records;
 	}
 }

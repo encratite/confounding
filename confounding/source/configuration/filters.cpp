@@ -1,11 +1,12 @@
+
 #include <mutex>
+#include <ranges>
+#include <format>
 
-#include <yaml-cpp/yaml.h>
-
+#include "yaml.h"
 #include "configuration/filters.h"
 #include "exception.h"
 #include "common.h"
-#include "yaml.h"
 
 namespace confounding {
 	namespace {
@@ -25,6 +26,17 @@ namespace confounding {
 		return configuration;
 	}
 
+	const ContractFilter& ContractFilterConfiguration::get_filter(const std::string& symbol) const {
+		auto iterator = std::ranges::find_if(_filters, [&](const ContractFilter& filter) {
+			return filter.exchange_symbol() == symbol;
+		});
+		if (iterator == _filters.end()) {
+			std::string message = std::format("Unable to find a contract filter matching symbol \"{}\"", symbol);
+			throw Exception(message);
+		}
+		return *iterator;
+	}
+
 	void ContractFilterConfiguration::load() {
 		using namespace YAML;
 		if (_initialized)
@@ -33,7 +45,10 @@ namespace confounding {
 		if (!doc.IsSequence())
 			throw Exception("The contract filter configuration file must consist of a sequence at the top level");
 		for (const auto& entry : doc) {
+			auto barchart_symbol = entry["exchange_symbol"].as<std::string>();
 			auto exchange_symbol = entry["exchange_symbol"].as<std::optional<std::string>>();
+			if (!exchange_symbol)
+				exchange_symbol = barchart_symbol;
 			auto f_records_limit = entry["f_records_limit"].as<std::optional<unsigned>>();
 			auto enable_fy_records_opt = entry["enable_fy_records"].as<std::optional<bool>>();
 			bool enable_fy_records = true;
@@ -51,7 +66,8 @@ namespace confounding {
 				cutoff_date = get_date(cutoff_date_string);
 			}
 			ContractFilter filter(
-				exchange_symbol,
+				barchart_symbol,
+				*exchange_symbol,
 				f_records_limit,
 				enable_fy_records,
 				legacy_cutoff,

@@ -29,10 +29,10 @@ namespace confounding {
 		std::string month_string = matches[2];
 		month = month_string[0];
 		year = std::stoi(matches[3]);
-		if (year < 70)
-			*year += 1900;
+		if (year < 70u)
+			*year += 1900u;
 		else
-			*year += 2000;
+			*year += 2000u;
 	}
 
 	bool GlobexCode::operator==(const GlobexCode& other) const {

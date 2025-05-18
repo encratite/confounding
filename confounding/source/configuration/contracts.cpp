@@ -1,7 +1,6 @@
 #include <mutex>
 
-#include <yaml-cpp/yaml.h>
-
+#include "yaml.h"
 #include "configuration/contracts.h"
 #include "exception.h"
 
