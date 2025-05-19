@@ -27,11 +27,28 @@ namespace confounding {
 		stream >> std::chrono::parse("%F", date);
 		if (stream.fail())
 		{
-			std::stringstream error_stream;
-			error_stream << "Failed to parse date: " << string << std::endl;
-			throw Exception(error_stream.str());
+			std::string message = std::format("Failed to parse date: {}", string);
+			throw Exception(message);
 		}
 		return date;
+	}
+
+	Date get_time_from_date(Time time) {
+		std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(time);
+		Date date = Date{ local_days };
+		return date;
+	}
+
+	Time get_time(const std::string& string) {
+		std::istringstream stream(string);
+		Time time;
+		stream >> std::chrono::parse("%F %R", time);
+		if (stream.fail())
+		{
+			std::string message = std::format("Failed to parse time: {}", string);
+			throw Exception(message);
+		}
+		return time;
 	}
 
 	std::string get_date_string(const Date& date) {
