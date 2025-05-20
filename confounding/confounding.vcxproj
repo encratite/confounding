@@ -26,6 +26,7 @@
     <ClInclude Include="include\yaml.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\archive.cpp" />
     <ClCompile Include="source\common.cpp" />
     <ClCompile Include="source\configuration\base.cpp" />
     <ClCompile Include="source\configuration\contracts.cpp" />
@@ -90,8 +91,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <DisableSpecificWarnings>26495</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -112,8 +112,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <DisableSpecificWarnings>26495</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

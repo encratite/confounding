@@ -21,10 +21,8 @@ namespace confounding {
 	GlobexCode::GlobexCode(const std::string& symbol)
 		: symbol(symbol) {
 		std::smatch matches;
-		if (!std::regex_match(symbol, matches, globex_code_pattern)) {
-			std::string message = std::format("Unable to parse Globex code: {}", symbol);
-			throw Exception(message);
-		}
+		if (!std::regex_match(symbol, matches, globex_code_pattern))
+			throw Exception("Unable to parse Globex code: {}", symbol);
 		root = matches[1];
 		std::string month_string = matches[2];
 		month = month_string[0];

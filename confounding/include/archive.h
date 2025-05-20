@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "types.h"
 
@@ -9,6 +10,8 @@ namespace confounding {
 	struct DailyRecord {
 		Date date;
 		double close;
+
+		DailyRecord(Date date, double close);
 	};
 
 	struct IntradayRecord {
@@ -29,13 +32,17 @@ namespace confounding {
 		// Z-score of daily_volatility(40 days)
 		double volatility_40d;
 		// All returns as ticks rather than relative return or money
-		// Returns do not include slippage or commission
+		// Returns do slippage or commission and are specific to one side (long/short)
 		// Returns to next daily close that lies at least 8 hours after the current point in time
-		double returns_next_close;
+		int32_t returns_next_close_long;
+		int32_t returns_next_close_short;
 		// Returns for fixed holding periods of 24/48/72 hours
-		double returns_24h;
-		double returns_48h;
-		double returns_72h;
+		int32_t returns_24h_long;
+		int32_t returns_24h_short;
+		int32_t returns_48h_long;
+		int32_t returns_48h_short;
+		int32_t returns_72h_long;
+		int32_t returns_72h_short;
 		// Missing: TP/SL-based returns
 	};
 

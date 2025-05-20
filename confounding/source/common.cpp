@@ -2,6 +2,7 @@
 #include <chrono>
 #include <cstdio>
 #include <format>
+#include <regex>
 
 #include "common.h"
 #include "exception.h"
@@ -26,10 +27,7 @@ namespace confounding {
 		Date date;
 		stream >> std::chrono::parse("%F", date);
 		if (stream.fail())
-		{
-			std::string message = std::format("Failed to parse date: {}", string);
-			throw Exception(message);
-		}
+			throw Exception("Failed to parse date: {}", string);
 		return date;
 	}
 
@@ -44,11 +42,21 @@ namespace confounding {
 		Time time;
 		stream >> std::chrono::parse("%F %R", time);
 		if (stream.fail())
-		{
-			std::string message = std::format("Failed to parse time: {}", string);
-			throw Exception(message);
-		}
+			throw Exception("Failed to parse time: {}", string);
 		return time;
+	}
+
+	TimeOfDay get_time_of_day(const std::string& string) {
+		static std::regex pattern(R"(^(\d{2}):(\d{2})$)");
+		std::smatch match;
+		if (std::regex_search(string, match, pattern)) {
+			unsigned hours = get_number<unsigned>(match[1]);
+			unsigned minutes = get_number<unsigned>(match[2]);
+			TimeOfDay time_of_day{ std::chrono::hours(hours) + std::chrono::minutes(minutes) };
+			return time_of_day;
+		} else {
+			throw Exception("Unable to parse time of day string: {}", string);
+		}
 	}
 
 	std::string get_date_string(const Date& date) {

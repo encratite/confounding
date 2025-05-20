@@ -3,6 +3,7 @@
 #include <string>
 
 #include "contract.h"
+#include "filter.h"
 #include "types.h"
 #include "globex.h"
 
@@ -33,7 +34,7 @@ namespace confounding {
 
 	void parse_futures_all();
 	void parse_futures_single(const Contract& symbol);
-	GlobexRecordMap read_daily_records(const std::string& symbol);
+	GlobexRecordMap read_daily_records(const std::string& symbol, const ContractFilter& filter);
 	IntradayRecordMap read_intraday_records(const std::string& symbol);
 	std::string get_symbol_path(const std::string& symbol, const std::string& suffix);
 	void generate_archive(

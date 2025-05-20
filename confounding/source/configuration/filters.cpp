@@ -28,12 +28,10 @@ namespace confounding {
 
 	const ContractFilter& ContractFilterConfiguration::get_filter(const std::string& symbol) const {
 		auto iterator = std::ranges::find_if(_filters, [&](const ContractFilter& filter) {
-			return filter.exchange_symbol() == symbol;
+			return filter.exchange_symbol == symbol;
 		});
-		if (iterator == _filters.end()) {
-			std::string message = std::format("Unable to find a contract filter matching symbol \"{}\"", symbol);
-			throw Exception(message);
-		}
+		if (iterator == _filters.end())
+			throw Exception("Unable to find a contract filter matching symbol \"{}\"", symbol);
 		return *iterator;
 	}
 
@@ -45,7 +43,7 @@ namespace confounding {
 		if (!doc.IsSequence())
 			throw Exception("The contract filter configuration file must consist of a sequence at the top level");
 		for (const auto& entry : doc) {
-			auto barchart_symbol = entry["exchange_symbol"].as<std::string>();
+			auto barchart_symbol = entry["barchart_symbol"].as<std::string>();
 			auto exchange_symbol = entry["exchange_symbol"].as<std::optional<std::string>>();
 			if (!exchange_symbol)
 				exchange_symbol = barchart_symbol;
@@ -61,22 +59,28 @@ namespace confounding {
 			auto exclude_months = get_filter_months("exclude_months", entry);
 			std::optional<Date> cutoff_date;
 			auto cutoff_date_entry = entry["cutoff_date"];
+			auto session_end = get_time_of_day("session_end", entry);
+			auto liquid_hours_start = get_time_of_day("liquid_hours_start", entry);
+			auto liquid_hours_end = get_time_of_day("liquid_hours_end", entry);
 			if (cutoff_date_entry) {
 				std::string cutoff_date_string = cutoff_date_entry.as<std::string>();
 				cutoff_date = get_date(cutoff_date_string);
 			}
-			ContractFilter filter(
-				barchart_symbol,
-				*exchange_symbol,
-				f_records_limit,
-				enable_fy_records,
-				legacy_cutoff,
-				first_filter_contract,
-				last_filter_contract,
-				include_months,
-				exclude_months,
-				cutoff_date
-			);
+			ContractFilter filter{
+				.barchart_symbol = barchart_symbol,
+				.exchange_symbol = *exchange_symbol,
+				.f_records_limit = f_records_limit,
+				.enable_fy_records = enable_fy_records,
+				.legacy_cutoff = legacy_cutoff,
+				.first_filter_contract = first_filter_contract,
+				.last_filter_contract = last_filter_contract,
+				.include_months = include_months,
+				.exclude_months = exclude_months,
+				.cutoff_date = cutoff_date,
+				.session_end = session_end,
+				.liquid_hours_start = liquid_hours_start,
+				.liquid_hours_end = liquid_hours_end
+			};
 			_filters.push_back(std::move(filter));
 		}
 	}
@@ -90,5 +94,11 @@ namespace confounding {
 		}
 		else
 			return std::nullopt;
+	}
+
+	TimeOfDay ContractFilterConfiguration::get_time_of_day(const std::string& key, const YAML::iterator::value_type& entry) {
+		std::string time_of_day_string = entry[key].as<std::string>();
+		TimeOfDay time_of_day = confounding::get_time_of_day(time_of_day_string);
+		return time_of_day;
 	}
 }
