@@ -4,6 +4,8 @@
 #include <format>
 #include <map>
 #include <deque>
+#include <ranges>
+#include <math.h>
 
 #pragma warning(push)
 #pragma warning(disable: 4267 4244)
@@ -16,7 +18,6 @@
 #include "configuration/contracts.h"
 #include "configuration/filters.h"
 #include "common.h"
-#include "archive.h"
 
 namespace confounding {
 	namespace {
@@ -24,7 +25,8 @@ namespace confounding {
 		constexpr unsigned hours_per_day = 24;
 		constexpr Date first_intraday_date{ std::chrono::year{2008}, std::chrono::month{1}, std::chrono::day{1} };
 		constexpr int intraday_max_holding_days = 3;
-		constexpr std::size_t momentum_window_size = 40;
+		constexpr std::size_t recent_closes_window_size = 40;
+		constexpr std::size_t recent_returns_window_size = recent_closes_window_size;
 		constexpr std::chrono::hours min_session_end_offset(8);
 		constexpr double close_minimum = 0.001;
 	}
@@ -148,42 +150,24 @@ namespace confounding {
 		// at the end of the function because the archive will be freed anyway
 		archive.daily_records.reserve(daily_records.size());
 		const auto& last_date = daily_records.rbegin()->first;
-		std::chrono::sys_days days1 = std::chrono::sys_days{ first_intraday_date };
-		std::chrono::sys_days days2 = std::chrono::sys_days{ last_date };
+		auto days1 = std::chrono::sys_days{ first_intraday_date };
+		auto days2 = std::chrono::sys_days{ last_date };
 		std::chrono::days days_diff = days2 - days1;
 		std::size_t intraday_records_reserve = hours_per_day * days_diff.count();
 		archive.intraday_records.reserve(intraday_records_reserve);
 		std::map<Date, GlobexRecord> selected_daily_records;
 		std::deque<double> recent_closes;
+		std::deque<double> recent_returns;
 		for (const auto& [date, records] : daily_records) {
-			GlobexRecord daily_globex_record;
-			if (f_number) {
-				std::size_t index = static_cast<std::size_t>(*f_number) - 1;
-				if (index >= records.size()) {
-					// Use get_date_string rather than {%F} to work around an MSVC bug
-					// that erroneously spits out errors, despite the code compiling just fine
-					throw Exception("Symbol {} lacks a daily F{} record at {}", symbol, *f_number, get_date_string(date));
-				}
-				daily_globex_record = records[index];
-			} else if (fy_record) {
-				const auto& f1_record = records.front();
-				GlobexCode globex_code = f1_record.globex_code;
-				globex_code.add_year();
-				auto iterator = std::find_if(
-					records.begin(),
-					records.end(),
-					[&](const GlobexRecord& record) {
-						return record.globex_code == globex_code;
-					});
-				if (iterator == records.end())
-					throw Exception("Symbol {} lacks a daily FY record at {}", symbol, get_date_string(date));
-				DailyRecord daily_record = DailyRecord(daily_globex_record.date, daily_globex_record.close);
-				daily_globex_record = *iterator;
-				archive.daily_records.push_back(daily_record);
-			}
-			recent_closes.push_front(daily_globex_record.close);
-			while (recent_closes.size() > momentum_window_size)
-				recent_closes.pop_back();
+			GlobexRecord daily_globex_record = get_daily_globex_record(
+				date,
+				f_number,
+				fy_record,
+				symbol,
+				records,
+				archive
+			);
+			update_recent_closes(daily_globex_record, recent_closes, recent_returns);
 			IntradayRecordsKey key(date, daily_globex_record.globex_code);
 			auto iterator = intraday_records.find(key);
 			if (
@@ -193,7 +177,7 @@ namespace confounding {
 				// There are typically fewer intraday records than daily records available anyway, skip it
 				continue;
 			}
-			if (recent_closes.size() < momentum_window_size) {
+			if (recent_closes.size() < recent_closes_window_size) {
 				// Can't calculate all momentum/volatility features yet
 				continue;
 			}
@@ -211,47 +195,154 @@ namespace confounding {
 				iterator++;
 			}
 			for (const auto& record : today) {
-				std::chrono::local_days local_days{ date };
-				Time close_time = local_days + std::chrono::duration_cast<std::chrono::hours>(filter.session_end.to_duration());
-				bool use_today = record.time > close_time + min_session_end_offset;
-				std::size_t recent_closes_offset = use_today ? 0 : 1;
-				double close = record.close;
-				auto get_recent_close = [&](std::size_t i) {
-					return recent_closes[recent_closes_offset + i];
-				};
-				double close_1d = get_recent_close(0);
-				double close_2d = get_recent_close(1);
-				double close_10d = get_recent_close(9);
-				double close_40d = get_recent_close(39);
-				if (
-					close < close_minimum ||
-					close_1d < close_minimum ||
-					close_2d < close_minimum ||
-					close_10d < close_minimum ||
-					close_40d < close_minimum
-				) {
-					// At least one of the recent values reached pathologically low values that will grossly distort ratios
-					// Just skip all of these abnormal values
-					continue;
-				}
-				double momentum_1d = get_rate_of_change(close, close_1d);
-				double momentum_2d = get_rate_of_change(close, close_2d);
-				double momentum_2d_gap = get_rate_of_change(close_1d, close_2d);
-				double momentum_10d = get_rate_of_change(close, close_10d);
-				double momentum_40d = get_rate_of_change(close, close_40d);
-				auto intraday_record = IntradayRecord{
-					.momentum_1d = momentum_1d,
-					.momentum_2d = momentum_2d,
-					.momentum_2d_gap = momentum_2d_gap,
-					// Missing: momentum_8h
-					.momentum_10d = momentum_10d,
-					.momentum_40d = momentum_40d,
-					// Missing: all volatility values
-					// Missing: all return values
-				};
-				archive.intraday_records.push_back(intraday_record);
+				generate_intraday_record(
+					record,
+					date,
+					intraday_closes,
+					recent_closes,
+					recent_returns,
+					archive,
+					filter
+				);
 			}
 		}
 		throw Exception("Not implemented: archive output");
+	}
+
+	GlobexRecord get_daily_globex_record(
+		Date date,
+		std::optional<unsigned> f_number,
+		bool fy_record,
+		const std::string& symbol,
+		const std::vector<GlobexRecord>& records,
+		Archive& archive
+	) {
+		GlobexRecord daily_globex_record;
+		if (f_number) {
+			std::size_t index = static_cast<std::size_t>(*f_number) - 1;
+			if (index >= records.size()) {
+				// Use get_date_string rather than {%F} to work around an MSVC bug
+				// that erroneously spits out errors, despite the code compiling just fine
+				throw Exception("Symbol {} lacks a daily F{} record at {}", symbol, *f_number, get_date_string(date));
+			}
+			daily_globex_record = records[index];
+		}
+		else if (fy_record) {
+			const auto& f1_record = records.front();
+			GlobexCode globex_code = f1_record.globex_code;
+			globex_code.add_year();
+			auto iterator = std::find_if(
+				records.begin(),
+				records.end(),
+				[&](const GlobexRecord& record) {
+					return record.globex_code == globex_code;
+				});
+			if (iterator == records.end())
+				throw Exception("Symbol {} lacks a daily FY record at {}", symbol, get_date_string(date));
+			DailyRecord daily_record = DailyRecord(daily_globex_record.date, daily_globex_record.close);
+			daily_globex_record = *iterator;
+			archive.daily_records.push_back(daily_record);
+		}
+		return daily_globex_record;
+	}
+
+	void update_recent_closes(
+		const GlobexRecord& daily_globex_record,
+		std::deque<double>& recent_closes,
+		std::deque<double>& recent_returns
+	) {
+		recent_closes.push_front(daily_globex_record.close);
+		while (recent_closes.size() > recent_closes_window_size)
+			recent_closes.pop_back();
+		if (recent_closes.size() >= 2) {
+			double close1 = recent_closes[0];
+			double close2 = recent_closes[1];
+			if (close1 > close_minimum && close2 > close_minimum) {
+				double returns = get_rate_of_change(close1, close2);
+				recent_returns.push_front(returns);
+				while (recent_returns.size() > recent_returns_window_size)
+					recent_returns.pop_back();
+			}
+		}
+	}
+
+	void generate_intraday_record(
+		const IntradayClose& record,
+		Date date,
+		const std::vector<IntradayClose>& intraday_closes,
+		const std::deque<double>& recent_closes,
+		const std::deque<double>& recent_returns,
+		Archive& archive,
+		const ContractFilter& filter
+	) {
+		std::chrono::local_days local_days{ date };
+		Time close_time = local_days + std::chrono::duration_cast<std::chrono::hours>(filter.session_end.to_duration());
+		bool use_today = record.time > close_time + min_session_end_offset;
+		std::size_t recent_closes_offset = use_today ? 0 : 1;
+		double close = record.close;
+		auto get_recent_close = [&](std::size_t i) {
+			return recent_closes[recent_closes_offset + i];
+			};
+		double close_1d = get_recent_close(0);
+		double close_2d = get_recent_close(1);
+		double close_10d = get_recent_close(9);
+		double close_40d = get_recent_close(39);
+		auto time_8h = record.time - std::chrono::hours(8);
+		auto intraday_iterator = std::find_if(intraday_closes.begin(), intraday_closes.end(), [&](const IntradayClose& intraday_close) {
+			return intraday_close.time == time_8h;
+			});
+		if (intraday_iterator == intraday_closes.end()) {
+			// This shouldn't happen under normal circumstances
+			return;
+		}
+		double close_8h = intraday_iterator->close;
+		if (
+			close < close_minimum ||
+			close_1d < close_minimum ||
+			close_2d < close_minimum ||
+			close_10d < close_minimum ||
+			close_40d < close_minimum ||
+			close_8h < close_minimum
+			) {
+			// At least one of the recent values reached pathologically low values that will grossly distort ratios
+			// Just skip all of these abnormal values
+			return;
+		}
+		double momentum_1d = get_rate_of_change(close, close_1d);
+		double momentum_2d = get_rate_of_change(close, close_2d);
+		double momentum_2d_gap = get_rate_of_change(close_1d, close_2d);
+		double momentum_8h = get_rate_of_change(close, close_2d);
+		double momentum_10d = get_rate_of_change(close, close_10d);
+		double momentum_40d = get_rate_of_change(close, close_40d);
+		double volatility_10d = get_volatility(10, recent_returns);
+		double volatility_40d = get_volatility(40, recent_returns);
+		auto intraday_record = IntradayRecord{
+			.momentum_1d = momentum_1d,
+			.momentum_2d = momentum_2d,
+			.momentum_2d_gap = momentum_2d_gap,
+			.momentum_8h = momentum_8h,
+			.momentum_10d = momentum_10d,
+			.momentum_40d = momentum_40d,
+			.volatility_10d = volatility_10d,
+			.volatility_40d = volatility_40d,
+			// Missing: all return values
+		};
+		archive.intraday_records.push_back(intraday_record);
+	}
+
+	double get_volatility(std::size_t n, const std::deque<double>& recent_returns) {
+		double mean_sum = 0.0;
+		auto view = std::views::take(n);
+		for (double x : recent_returns | view)
+			mean_sum += x;
+		double mean = mean_sum / n;
+		double delta_sum = 0.0;
+		for (double x : recent_returns | view) {
+			double delta = x - mean;
+			delta_sum += delta * delta;
+		}
+		double standard_deviation = delta_sum / (n - 1);
+		double volatility = std::sqrt(static_cast<double>(n)) * standard_deviation;
+		return volatility;
 	}
 }

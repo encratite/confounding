@@ -6,6 +6,7 @@
 #include "filter.h"
 #include "types.h"
 #include "globex.h"
+#include "archive.h"
 
 namespace confounding {
 	struct GlobexRecord {
@@ -45,4 +46,27 @@ namespace confounding {
 		const IntradayRecordMap& intraday_records,
 		const ContractFilter& filter
 	);
+	GlobexRecord get_daily_globex_record(
+		Date date,
+		std::optional<unsigned> f_number,
+		bool fy_record,
+		const std::string& symbol,
+		const std::vector<GlobexRecord>& records,
+		Archive& archive
+	);
+	void update_recent_closes(
+		const GlobexRecord& daily_globex_record,
+		std::deque<double>& recent_closes,
+		std::deque<double>& recent_returns
+	);
+	void generate_intraday_record(
+		const IntradayClose& record,
+		Date date,
+		const std::vector<IntradayClose>& intraday_closes,
+		const std::deque<double>& recent_closes,
+		const std::deque<double>& recent_returns,
+		Archive& archive,
+		const ContractFilter& filter
+	);
+	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
 }
