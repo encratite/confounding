@@ -31,7 +31,7 @@ namespace confounding {
 		return date;
 	}
 
-	Date get_time_from_date(Time time) {
+	Date get_date(Time time) {
 		std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(time);
 		Date date = Date{ local_days };
 		return date;
@@ -59,6 +59,13 @@ namespace confounding {
 		}
 	}
 
+	TimeOfDay get_time_of_day(Time time) {
+		std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(time);
+		auto hours = time - local_days;
+		TimeOfDay time_of_day{ hours };
+		return time_of_day;
+	}
+
 	std::string get_date_string(const Date& date) {
 		std::string output = std::format(
 			"{:04}-{:02}-{:02}",
@@ -67,6 +74,12 @@ namespace confounding {
 			static_cast<unsigned>(date.day())
 		);
 		return output;
+	}
+
+	double get_rate_of_change(double a, double b) {
+		if (a < 0 || b <= 0)
+			throw Exception("Invalid parameters for get_rate_of_change");
+		return a / b - 1.0;
 	}
 
 	bool operator<(const Time& time, const Date& date) {

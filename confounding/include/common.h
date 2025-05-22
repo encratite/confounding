@@ -9,10 +9,12 @@
 namespace confounding {
 	std::shared_ptr<char> read_file(const std::string& path);
 	Date get_date(const std::string& string);
-	Date get_time_from_date(Time time);
+	Date get_date(Time time);
 	Time get_time(const std::string& string);
 	TimeOfDay get_time_of_day(const std::string& string);
+	TimeOfDay get_time_of_day(Time time);
 	std::string get_date_string(const Date& date);
+	double get_rate_of_change(double a, double b);
 	bool operator<(const Time& time, const Date& date);
 
 	template<typename T>
