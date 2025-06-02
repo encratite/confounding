@@ -34,7 +34,7 @@ namespace confounding {
 	typedef std::map<IntradayRecordsKey, std::vector<IntradayClose>> IntradayRecordMap;
 
 	void parse_futures_all();
-	void parse_futures_single(const Contract& symbol);
+	void parse_futures_single(const Contract& contract);
 	GlobexRecordMap read_daily_records(const std::string& symbol, const ContractFilter& filter);
 	IntradayRecordMap read_intraday_records(const std::string& symbol, const ContractFilter& filter);
 	std::string get_symbol_path(const std::string& symbol, const std::string& suffix);
@@ -65,8 +65,10 @@ namespace confounding {
 		const std::vector<IntradayClose>& intraday_closes,
 		const std::deque<double>& recent_closes,
 		const std::deque<double>& recent_returns,
+		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
 		const ContractFilter& filter
 	);
 	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
+	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records);
 }

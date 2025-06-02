@@ -33,8 +33,13 @@ namespace confounding {
 
 	Date get_date(Time time) {
 		std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(time);
-		Date date = Date{ local_days };
+		Date date = Date{local_days};
 		return date;
+	}
+
+	void add_day(Date& date) {
+		auto days = std::chrono::sys_days{date} + std::chrono::days{1};
+		date = Date{days};
 	}
 
 	Time get_time(const std::string& string) {
@@ -46,13 +51,18 @@ namespace confounding {
 		return time;
 	}
 
+	Time get_time(Date date) {
+		Time output = std::chrono::local_days{date};
+		return output;
+	}
+
 	TimeOfDay get_time_of_day(const std::string& string) {
 		static std::regex pattern(R"(^(\d{2}):(\d{2})$)");
 		std::smatch match;
 		if (std::regex_search(string, match, pattern)) {
 			unsigned hours = get_number<unsigned>(match[1]);
 			unsigned minutes = get_number<unsigned>(match[2]);
-			TimeOfDay time_of_day{ std::chrono::hours(hours) + std::chrono::minutes(minutes) };
+			TimeOfDay time_of_day{std::chrono::hours(hours) + std::chrono::minutes(minutes)};
 			return time_of_day;
 		} else {
 			throw Exception("Unable to parse time of day string: {}", string);
@@ -62,7 +72,7 @@ namespace confounding {
 	TimeOfDay get_time_of_day(Time time) {
 		std::chrono::local_days local_days = std::chrono::floor<std::chrono::days>(time);
 		auto hours = time - local_days;
-		TimeOfDay time_of_day{ hours };
+		TimeOfDay time_of_day{hours};
 		return time_of_day;
 	}
 

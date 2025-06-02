@@ -14,25 +14,32 @@ namespace confounding {
 		DailyRecord(Date date, double close);
 	};
 
-	struct IntradayRecord {
-		// Z-score of close(t) / last_session_close(t - 8 h)
-		double momentum_1d;
-		// Z-score of close(t) / last_session_close(t - 8 h - 1 day)
-		double momentum_2d;
-		// Z-score of last_session_close(t - 8 h) / last_session_close(t - 8 h - 1 day)
-		double momentum_2d_gap;
-		// Z-score of close(t) / close(t - 8 h)
-		double momentum_8h;
-		// Z-score of close(t) / last_session_close(t - 8 h - 9 days)
-		double momentum_10d;
-		// Z-score of close(t) / last_session_close(t - 8 h - 39 days)
-		double momentum_40d;
-		// Z-score of daily_volatility(10 days)
-		double volatility_10d;
-		// Z-score of daily_volatility(40 days)
-		double volatility_40d;
-		// All returns as ticks rather than relative return or money
-		// Returns do slippage or commission and are specific to one side (long/short)
+
+	/*
+	The Z-score features for intraday records are initially calculated using doubles for greater accuracy, especially for the standard deviation.
+	The values that are ultimately persisted to the archive are floats rather than doubles for performance reasons.
+	*/
+	template<typename T>
+	requires (std::same_as<T, float> || std::same_as<T, double>)
+	struct IntradayRecordT {
+		// close(t) / last_session_close(t - 8 h)
+		T momentum_1d;
+		// close(t) / last_session_close(t - 8 h - 1 day)
+		T momentum_2d;
+		// last_session_close(t - 8 h) / last_session_close(t - 8 h - 1 day)
+		T momentum_2d_gap;
+		// close(t) / close(t - 8 h)
+		T momentum_8h;
+		// close(t) / last_session_close(t - 8 h - 9 days)
+		T momentum_10d;
+		// close(t) / last_session_close(t - 8 h - 39 days)
+		T momentum_40d;
+		// daily_volatility(10 days)
+		T volatility_10d;
+		// daily_volatility(40 days)
+		T volatility_40d;
+		// All returns are stored as ticks rather than relative return or money
+		// Returns do contain slippage and commission and are specific to one side (long/short)
 		// Returns to next daily close that lies at least 8 hours after the current point in time
 		int32_t returns_next_close_long;
 		int32_t returns_next_close_short;
@@ -46,10 +53,17 @@ namespace confounding {
 		// Missing: TP/SL-based returns
 	};
 
+	typedef IntradayRecordT<double> RawIntradayRecord;
+	typedef IntradayRecordT<float> IntradayRecord;
+
 	struct Archive {
-		std::string symbol;
+		std::string symbol; 
 		std::vector<DailyRecord> daily_records;
-		std::vector<Time> intraday_time;
+		/*
+		Unlike daily records, intraday records do not have any timestamps of their own.
+		The time of individual records is derived from a pre-calculated data structure that maps Time -> std::size_t offsets into the array.
+		*/
+		Time first_intraday_time;
 		std::vector<IntradayRecord> intraday_records;
 	};
 }

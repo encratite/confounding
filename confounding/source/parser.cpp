@@ -23,7 +23,7 @@ namespace confounding {
 	namespace {
 		constexpr unsigned default_f_records_limit = 3;
 		constexpr unsigned hours_per_day = 24;
-		constexpr Date first_intraday_date{ std::chrono::year{2008}, std::chrono::month{1}, std::chrono::day{1} };
+		constexpr Date first_intraday_date{std::chrono::year{2008}, std::chrono::month{1}, std::chrono::day{1}};
 		constexpr int intraday_max_holding_days = 3;
 		constexpr std::size_t recent_closes_window_size = 40;
 		constexpr std::size_t recent_returns_window_size = recent_closes_window_size;
@@ -48,9 +48,8 @@ namespace confounding {
 			std::execution::par,
 			contract_configuration.begin(),
 			contract_configuration.end(),
-			[](const Contract& contract) {
-				parse_futures_single(contract);
-			});
+			&parse_futures_single
+		);
 	}
 
 	void parse_futures_single(const Contract& contract) {
@@ -111,10 +110,12 @@ namespace confounding {
 		IntradayRecordMap intraday_records;
 		auto liquid_hours_start = filter.liquid_hours_start.to_duration();
 		auto liquid_hours_end = filter.liquid_hours_end.to_duration();
-		while (csv.read_row(
-			globex_string,
-			time_string,
-			record.close)
+		while (
+			csv.read_row(
+				globex_string,
+				time_string,
+				record.close
+			)
 		) {
 			GlobexCode globex_code = globex_string;
 			record.time = get_time(time_string);
@@ -145,22 +146,46 @@ namespace confounding {
 		const IntradayRecordMap& intraday_records,
 		const ContractFilter& filter
 	) {
+		std::vector<RawIntradayRecord> raw_intraday_records;
 		Archive archive;
 		// Allocate more memory than necessary for the H1 intraday records without shrinking them
 		// at the end of the function because the archive will be freed anyway
 		archive.daily_records.reserve(daily_records.size());
 		const auto& last_date = daily_records.rbegin()->first;
-		auto days1 = std::chrono::sys_days{ first_intraday_date };
-		auto days2 = std::chrono::sys_days{ last_date };
+		auto days1 = std::chrono::sys_days{first_intraday_date};
+		auto days2 = std::chrono::sys_days{last_date};
 		std::chrono::days days_diff = days2 - days1;
-		std::size_t intraday_records_reserve = hours_per_day * days_diff.count();
-		archive.intraday_records.reserve(intraday_records_reserve);
+		std::size_t daily_records_reserve = days_diff.count();
+		std::size_t intraday_records_reserve = hours_per_day * daily_records_reserve;
+		raw_intraday_records.reserve(intraday_records_reserve);
 		std::map<Date, GlobexRecord> selected_daily_records;
 		std::deque<double> recent_closes;
 		std::deque<double> recent_returns;
-		for (const auto& [date, records] : daily_records) {
+		const auto& configuration = Configuration::get();
+		auto reference_date = configuration.intraday_reference_date;
+		auto add_nan_records = [&]() {
+			for (unsigned i = 0; i < hours_per_day; i++)
+				add_nan_record(raw_intraday_records);
+		};
+		for (; reference_date <= last_date; add_day(reference_date)) {
+			// Health check
+			if (raw_intraday_records.size() % hours_per_day != 0)
+				throw Exception("Invalid number of records in raw_intraday_records: {}", raw_intraday_records.size());
+			auto weekday = std::chrono::weekday{reference_date};
+			if (weekday == std::chrono::Saturday || weekday == std::chrono::Sunday) {
+				// Skipping weekends like this isn't entirely correct since CME futures actually do have intraday records
+				// for Sundays but they're on the low liquidity side so it shouldn't hurt much
+				continue;
+			}
+			auto daily_iterator = daily_records.find(reference_date);
+			if (daily_iterator == daily_records.end()) {
+				// Could be a holiday, generate NaN records
+				add_nan_records();
+				continue;
+			}
+			const auto& [date, records] = *daily_iterator;
 			GlobexRecord daily_globex_record = get_daily_globex_record(
-				date,
+				reference_date,
 				f_number,
 				fy_record,
 				symbol,
@@ -168,39 +193,48 @@ namespace confounding {
 				archive
 			);
 			update_recent_closes(daily_globex_record, recent_closes, recent_returns);
-			IntradayRecordsKey key(date, daily_globex_record.globex_code);
-			auto iterator = intraday_records.find(key);
-			if (
-				iterator == intraday_records.begin() ||
-				iterator == intraday_records.end()
-			) {
-				// There are typically fewer intraday records than daily records available anyway, skip it
-				continue;
-			}
 			if (recent_closes.size() < recent_closes_window_size) {
-				// Can't calculate all momentum/volatility features yet
+				// Can't calculate all momentum/volatility features yet, generate NaN records
+				add_nan_records();
 				continue;
 			}
-			const auto& today = iterator->second;
+			IntradayRecordsKey key(date, daily_globex_record.globex_code);
+			auto intraday_iterator = intraday_records.find(key);
+			if (
+				intraday_iterator == intraday_records.begin() ||
+				intraday_iterator == intraday_records.end()
+				) {
+				// There are typically fewer intraday records than daily records available anyway, skip it
+				add_nan_records();
+				continue;
+			}
+			const auto& today = intraday_iterator->second;
 			// Collect local intraday closes around the day we are currently processing,
 			// in a period ranging from the previous day to three days after today
 			std::size_t intraday_closes_reserve = (intraday_max_holding_days + 1) * hours_per_day;
 			std::vector<IntradayClose> intraday_closes(intraday_closes_reserve);
-			iterator--;
+			intraday_iterator--;
 			for (int i = -1; i < intraday_max_holding_days; i++) {
-				if (iterator == intraday_records.end())
+				if (intraday_iterator == intraday_records.end())
 					throw Exception("Unable to calculate all returns for symbol {} at {} due to missing data", symbol, get_date_string(date));
-				const auto& records = iterator->second;
+				const auto& records = intraday_iterator->second;
 				std::ranges::copy(records, std::back_inserter(intraday_closes));
-				iterator++;
+				intraday_iterator++;
 			}
+			Time reference_time = get_time(reference_date);
 			for (const auto& record : today) {
+				while (reference_time < record.time) {
+					// Fill the gaps in the intraday data with NaN records
+					add_nan_record(raw_intraday_records);
+					reference_time += std::chrono::hours{1};
+				}
 				generate_intraday_record(
 					record,
 					date,
 					intraday_closes,
 					recent_closes,
 					recent_returns,
+					raw_intraday_records,
 					archive,
 					filter
 				);
@@ -272,17 +306,18 @@ namespace confounding {
 		const std::vector<IntradayClose>& intraday_closes,
 		const std::deque<double>& recent_closes,
 		const std::deque<double>& recent_returns,
+		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
 		const ContractFilter& filter
 	) {
-		std::chrono::local_days local_days{ date };
+		std::chrono::local_days local_days{date};
 		Time close_time = local_days + std::chrono::duration_cast<std::chrono::hours>(filter.session_end.to_duration());
 		bool use_today = record.time > close_time + min_session_end_offset;
 		std::size_t recent_closes_offset = use_today ? 0 : 1;
 		double close = record.close;
 		auto get_recent_close = [&](std::size_t i) {
 			return recent_closes[recent_closes_offset + i];
-			};
+		};
 		double close_1d = get_recent_close(0);
 		double close_2d = get_recent_close(1);
 		double close_10d = get_recent_close(9);
@@ -290,9 +325,11 @@ namespace confounding {
 		auto time_8h = record.time - std::chrono::hours(8);
 		auto intraday_iterator = std::find_if(intraday_closes.begin(), intraday_closes.end(), [&](const IntradayClose& intraday_close) {
 			return intraday_close.time == time_8h;
-			});
+		});
 		if (intraday_iterator == intraday_closes.end()) {
-			// This shouldn't happen under normal circumstances
+			// The intraday buffer lacks a corresponding value for that offset
+			// Could be the result of daily maintenance, but skip it either way
+			add_nan_record(raw_intraday_records);
 			return;
 		}
 		double close_8h = intraday_iterator->close;
@@ -303,9 +340,10 @@ namespace confounding {
 			close_10d < close_minimum ||
 			close_40d < close_minimum ||
 			close_8h < close_minimum
-			) {
+		) {
 			// At least one of the recent values reached pathologically low values that will grossly distort ratios
 			// Just skip all of these abnormal values
+			add_nan_record(raw_intraday_records);
 			return;
 		}
 		double momentum_1d = get_rate_of_change(close, close_1d);
@@ -316,7 +354,7 @@ namespace confounding {
 		double momentum_40d = get_rate_of_change(close, close_40d);
 		double volatility_10d = get_volatility(10, recent_returns);
 		double volatility_40d = get_volatility(40, recent_returns);
-		auto intraday_record = IntradayRecord{
+		auto intraday_record = RawIntradayRecord{
 			.momentum_1d = momentum_1d,
 			.momentum_2d = momentum_2d,
 			.momentum_2d_gap = momentum_2d_gap,
@@ -327,7 +365,9 @@ namespace confounding {
 			.volatility_40d = volatility_40d,
 			// Missing: all return values
 		};
-		archive.intraday_records.push_back(intraday_record);
+		if (raw_intraday_records.size() == 0)
+			archive.first_intraday_time = record.time;
+		raw_intraday_records.push_back(intraday_record);
 	}
 
 	double get_volatility(std::size_t n, const std::deque<double>& recent_returns) {
@@ -344,5 +384,30 @@ namespace confounding {
 		double standard_deviation = delta_sum / (n - 1);
 		double volatility = std::sqrt(static_cast<double>(n)) * standard_deviation;
 		return volatility;
+	}
+
+	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records) {
+		if (raw_intraday_records.size() == 0)
+			return;
+		constexpr float nan = std::numeric_limits<float>::signaling_NaN();
+		auto intraday_record = RawIntradayRecord{
+			.momentum_1d = nan,
+			.momentum_2d = nan,
+			.momentum_2d_gap = nan,
+			.momentum_8h = nan,
+			.momentum_10d = nan,
+			.momentum_40d = nan,
+			.volatility_10d = nan,
+			.volatility_40d = nan,
+			.returns_next_close_long = 0,
+			.returns_next_close_short = 0,
+			.returns_24h_long = 0,
+			.returns_24h_short = 0,
+			.returns_48h_long = 0,
+			.returns_48h_short = 0,
+			.returns_72h_long = 0,
+			.returns_72h_short = 0
+		};
+		raw_intraday_records.push_back(intraday_record);
 	}
 }
