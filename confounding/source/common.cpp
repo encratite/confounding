@@ -3,11 +3,49 @@
 #include <cstdio>
 #include <format>
 #include <regex>
+#include <cmath>
 
 #include "common.h"
 #include "exception.h"
 
 namespace confounding {
+	// The required minimum for 6J
+	constexpr int money_precision = 7;
+
+	Money::Money()
+		: _amount(0) {
+	}
+
+	Money::Money(int64_t amount)
+		: _amount(amount) {
+	}
+
+	Money::Money(std::string amount_string) {
+		static std::regex pattern(R"(^-?(0|[1-9]\d*)(\.(\d+))?$)");
+		std::smatch match;
+		if (std::regex_search(amount_string, match, pattern)) {
+			int64_t integer_part = get_number<int64_t>(match[1]);
+			constexpr int64_t integer_factor = get_base_10_factor(money_precision);
+			std::string fractional_string = match[3];
+			if (fractional_string.size() > money_precision)
+				throw Exception("Fractional part of money string too long: {}", amount_string);
+			int64_t fractional_part = get_number<int64_t>(fractional_string);
+			int delta = money_precision - static_cast<int>(fractional_string.size());
+			int64_t fractional_factor = get_base_10_factor(delta);
+			_amount = integer_factor * integer_part + fractional_factor + fractional_part;
+		} else {
+			throw Exception("Unable to parse money string: {}", amount_string);
+		}
+	}
+
+	int64_t Money::to_int() const {
+		return _amount;
+	}
+
+	double Money::to_double() const {
+		return static_cast<double>(_amount) * std::pow(1.0, -money_precision);
+	}
+
 	std::shared_ptr<char> read_file(const std::string& path) {
 		FILE* file = std::fopen(path.c_str(), "rb");
 		if (file == nullptr) {

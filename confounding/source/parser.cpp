@@ -56,15 +56,16 @@ namespace confounding {
 		const std::string& symbol = contract.symbol;
 		const auto& filter_configuration = ContractFilterConfiguration::get();
 		const auto& filter = filter_configuration.get_filter(symbol);
+		const auto& contract_configuration = ContractConfiguration::get();
 		auto daily_records = read_daily_records(symbol, filter);
 		auto intraday_records = read_intraday_records(symbol, filter);
 		unsigned f_number_limit = default_f_records_limit;
 		if (filter.f_records_limit)
 			f_number_limit = *filter.f_records_limit;
 		for (unsigned f_number = 1; f_number <= f_number_limit; f_number++)
-			generate_archive(f_number, false, symbol, daily_records, intraday_records, filter);
+			generate_archive(f_number, false, symbol, daily_records, intraday_records, filter, contract);
 		if (filter.enable_fy_records)
-			generate_archive(std::nullopt, true, symbol, daily_records, intraday_records, filter);
+			generate_archive(std::nullopt, true, symbol, daily_records, intraday_records, filter, contract);
 		throw Exception("Not implemented: missing intraday data");
 	}
 
@@ -75,15 +76,17 @@ namespace confounding {
 		GlobexRecord record;
 		std::string globex_string;
 		std::string date_string;
+		std::string close_string;
 		GlobexRecordMap daily_records;
 		while (csv.read_row(
 			globex_string,
 			date_string,
-			record.close,
+			close_string,
 			record.open_interest)
 		) {
 			record.globex_code = GlobexCode(globex_string);
 			record.date = get_date(date_string);
+			record.close = Money(close_string);
 			// Only include contracts that are sufficiently liquid and feature volume/open interest data
 			// Most Barchart futures data from prior to 2006 has to be filtered out
 			if (filter.include_record(record.date, record.globex_code))
@@ -107,6 +110,7 @@ namespace confounding {
 		IntradayClose record;
 		std::string globex_string;
 		std::string time_string;
+		std::string close_string;
 		IntradayRecordMap intraday_records;
 		auto liquid_hours_start = filter.liquid_hours_start.to_duration();
 		auto liquid_hours_end = filter.liquid_hours_end.to_duration();
@@ -114,11 +118,12 @@ namespace confounding {
 			csv.read_row(
 				globex_string,
 				time_string,
-				record.close
+				close_string
 			)
 		) {
 			GlobexCode globex_code = globex_string;
 			record.time = get_time(time_string);
+			record.close = Money(close_string);
 			auto midnight = std::chrono::floor<std::chrono::days>(record.time);
 			auto hours_since_midnight = record.time - midnight;
 			if (hours_since_midnight >= liquid_hours_start && hours_since_midnight < liquid_hours_end) {
@@ -144,7 +149,8 @@ namespace confounding {
 		const std::string& symbol,
 		const GlobexRecordMap& daily_records,
 		const IntradayRecordMap& intraday_records,
-		const ContractFilter& filter
+		const ContractFilter& filter,
+		const Contract& contract
 	) {
 		std::vector<RawIntradayRecord> raw_intraday_records;
 		Archive archive;
@@ -236,7 +242,8 @@ namespace confounding {
 					recent_returns,
 					raw_intraday_records,
 					archive,
-					filter
+					filter,
+					contract
 				);
 			}
 		}
@@ -285,7 +292,7 @@ namespace confounding {
 		std::deque<double>& recent_closes,
 		std::deque<double>& recent_returns
 	) {
-		recent_closes.push_front(daily_globex_record.close);
+		recent_closes.push_front(daily_globex_record.close.to_double());
 		while (recent_closes.size() > recent_closes_window_size)
 			recent_closes.pop_back();
 		if (recent_closes.size() >= 2) {
@@ -308,13 +315,14 @@ namespace confounding {
 		const std::deque<double>& recent_returns,
 		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
-		const ContractFilter& filter
+		const ContractFilter& filter,
+		const Contract& contract
 	) {
 		std::chrono::local_days local_days{date};
 		Time close_time = local_days + std::chrono::duration_cast<std::chrono::hours>(filter.session_end.to_duration());
 		bool use_today = record.time > close_time + min_session_end_offset;
 		std::size_t recent_closes_offset = use_today ? 0 : 1;
-		double close = record.close;
+		double close = record.close.to_double();
 		auto get_recent_close = [&](std::size_t i) {
 			return recent_closes[recent_closes_offset + i];
 		};
@@ -332,7 +340,7 @@ namespace confounding {
 			add_nan_record(raw_intraday_records);
 			return;
 		}
-		double close_8h = intraday_iterator->close;
+		double close_8h = intraday_iterator->close.to_double();
 		if (
 			close < close_minimum ||
 			close_1d < close_minimum ||

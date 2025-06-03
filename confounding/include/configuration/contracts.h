@@ -12,6 +12,7 @@ namespace confounding {
 		static const ContractConfiguration& get();
 		std::vector<Contract>::const_iterator begin() const;
 		std::vector<Contract>::const_iterator end() const;
+		const Contract& get_contract(std::string symbol) const;
 
 	private:
 		bool _initialized;

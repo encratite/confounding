@@ -30,6 +30,19 @@ namespace confounding {
 		return _contracts.cend();
 	}
 
+	const Contract& ContractConfiguration::get_contract(std::string symbol) const {
+		auto iterator = std::find_if(
+			_contracts.begin(),
+			_contracts.end(),
+			[&](const Contract& contract) {
+				return contract.symbol == symbol;
+			}
+		);
+		if (iterator == _contracts.end())
+			throw Exception("Unable to find a contract matching symbol \"{}\"", symbol);
+		return *iterator;
+	}
+
 	void ContractConfiguration::load() {
 		if (_initialized)
 			return;

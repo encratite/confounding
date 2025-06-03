@@ -4,14 +4,15 @@
 #include <vector>
 #include <cstdint>
 
+#include "common.h"
 #include "types.h"
 
 namespace confounding {
 	struct DailyRecord {
 		Date date;
-		double close;
+		Money close;
 
-		DailyRecord(Date date, double close);
+		DailyRecord(Date date, Money close);
 	};
 
 

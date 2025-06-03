@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "common.h"
 #include "contract.h"
 #include "filter.h"
 #include "types.h"
@@ -12,7 +13,7 @@ namespace confounding {
 	struct GlobexRecord {
 		GlobexCode globex_code;
 		Date date;
-		double close;
+		Money close;
 		unsigned open_interest;
 	};
 
@@ -27,7 +28,7 @@ namespace confounding {
 
 	struct IntradayClose {
 		Time time;
-		double close;
+		Money close;
 	};
 
 	typedef std::map<Date, std::vector<GlobexRecord>> GlobexRecordMap;
@@ -44,7 +45,8 @@ namespace confounding {
 		const std::string& symbol,
 		const GlobexRecordMap& daily_records,
 		const IntradayRecordMap& intraday_records,
-		const ContractFilter& filter
+		const ContractFilter& filter,
+		const Contract& contract
 	);
 	GlobexRecord get_daily_globex_record(
 		Date date,
@@ -67,7 +69,8 @@ namespace confounding {
 		const std::deque<double>& recent_returns,
 		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
-		const ContractFilter& filter
+		const ContractFilter& filter,
+		const Contract& contract
 	);
 	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
 	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records);

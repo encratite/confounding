@@ -7,6 +7,27 @@
 #include "types.h"
 
 namespace confounding {
+	class Money {
+	public:
+		Money();
+		Money(int64_t amount);
+		Money(std::string amount_string);
+
+		int64_t to_int() const;
+		double to_double() const;
+
+	private:
+		// Encodes both the integer and the fractional portion of the price
+		int64_t _amount;
+
+		static constexpr int64_t get_base_10_factor(int exponent) {
+			int64_t output = 1;
+			for (int i = 0; i < exponent; i++)
+				output *= 10;
+			return output;
+		}
+	};
+
 	std::shared_ptr<char> read_file(const std::string& path);
 	Date get_date(const std::string& string);
 	Date get_date(Time time);
