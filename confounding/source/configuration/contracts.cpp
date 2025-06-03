@@ -50,15 +50,20 @@ namespace confounding {
 		if (!doc.IsSequence())
 			throw Exception("The contract configuration file must consist of a sequence at the top level");
 		for (const auto& entry : doc) {
+			auto get_money = [&](const char* key) {
+				std::string money_string = entry[key].as<std::string>();
+				Money money(money_string);
+				return money;
+			};
 			Contract contract{
 				.symbol = entry["symbol"].as<std::string>(),
 				.name = entry["name"].as<std::string>(),
 				.currency = entry["currency"].as<std::string>(),
-				.tick_size = entry["tick_size"].as<double>(),
-				.tick_value = entry["tick_value"].as<double>(),
-				.margin = entry["margin"].as<double>(),
-				.broker_fee = entry["broker_fee"].as<double>(),
-				.exchange_fee = entry["exchange_fee"].as<double>(),
+				.tick_size = get_money("tick_size"),
+				.tick_value = get_money("tick_value"),
+				.margin = get_money("margin"),
+				.broker_fee = get_money("broker_fee"),
+				.exchange_fee = get_money("exchange_fee"),
 				.spread = entry["spread"].as<unsigned>(),
 			};
 		}

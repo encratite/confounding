@@ -2,16 +2,18 @@
 
 #include <string>
 
+#include "common.h"
+
 namespace confounding {
 	struct Contract {
 		std::string symbol;
 		std::string name;
 		std::string currency;
-		double tick_size;
-		double tick_value;
-		double margin;
-		double broker_fee;
-		double exchange_fee;
+		Money tick_size;
+		Money tick_value;
+		Money margin;
+		Money broker_fee;
+		Money exchange_fee;
 		unsigned spread;
 	};
 }

@@ -199,6 +199,18 @@ namespace confounding {
 				archive
 			);
 			update_recent_closes(daily_globex_record, recent_closes, recent_returns);
+			daily_iterator++;
+			const auto& [_tomorrow_date, tomorrow_records] = *daily_iterator;
+			GlobexRecord tomorrow_globex_record = get_daily_globex_record(
+				reference_date,
+				f_number,
+				fy_record,
+				symbol,
+				records,
+				archive
+			);
+			Money today_close = daily_globex_record.close;
+			Money tomorrow_close = tomorrow_globex_record.close;
 			if (recent_closes.size() < recent_closes_window_size) {
 				// Can't calculate all momentum/volatility features yet, generate NaN records
 				add_nan_records();
@@ -240,6 +252,8 @@ namespace confounding {
 					intraday_closes,
 					recent_closes,
 					recent_returns,
+					today_close,
+					tomorrow_close,
 					raw_intraday_records,
 					archive,
 					filter,
@@ -313,6 +327,8 @@ namespace confounding {
 		const std::vector<IntradayClose>& intraday_closes,
 		const std::deque<double>& recent_closes,
 		const std::deque<double>& recent_returns,
+		Money today_close,
+		Money tomorrow_close,
 		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
 		const ContractFilter& filter,
@@ -362,6 +378,32 @@ namespace confounding {
 		double momentum_40d = get_rate_of_change(close, close_40d);
 		double volatility_10d = get_volatility(10, recent_returns);
 		double volatility_40d = get_volatility(40, recent_returns);
+		Money next_close = use_today ? today_close : tomorrow_close;
+		int32_t returns_next_close = next_close - record.close;
+		int32_t tick_size = static_cast<int32_t>(contract.tick_size.to_int());
+		if (returns_next_close % tick_size != 0)
+			throw Exception("Close delta at {} does not match tick size of {}", get_time_string(record.time), contract.symbol);
+		returns_next_close /= tick_size;
+		TimeOfDay record_time_of_day = get_time_of_day(record.time);
+		auto matching_records_view = intraday_closes | std::views::filter([&](const IntradayClose& intraday_close) {
+			TimeOfDay time_of_day = get_time_of_day(intraday_close.time);
+			bool match =
+				intraday_close.time > record.time &&
+				time_of_day.to_duration() == record_time_of_day.to_duration();
+			return match;
+		});
+		std::vector<IntradayClose> matching_records(matching_records_view.begin(), matching_records_view.end());
+		if (matching_records.size() != 3) {
+			// This might be a bit aggressive but generate NaN records for missing 24h/48h/72h returns
+			add_nan_record(raw_intraday_records);
+			return;
+		}
+		auto get_matching_close = [&](std::size_t i) {
+			return static_cast<int32_t>(matching_records[i].close.to_int());
+		};
+		int32_t returns_24h = get_matching_close(0);
+		int32_t returns_48h = get_matching_close(1);
+		int32_t returns_72h = get_matching_close(2);
 		auto intraday_record = RawIntradayRecord{
 			.momentum_1d = momentum_1d,
 			.momentum_2d = momentum_2d,
@@ -371,7 +413,10 @@ namespace confounding {
 			.momentum_40d = momentum_40d,
 			.volatility_10d = volatility_10d,
 			.volatility_40d = volatility_40d,
-			// Missing: all return values
+			.returns_next_close = returns_next_close,
+			.returns_24h = returns_24h,
+			.returns_48h = returns_48h,
+			.returns_72h = returns_72h,
 		};
 		if (raw_intraday_records.size() == 0)
 			archive.first_intraday_time = record.time;
@@ -407,14 +452,10 @@ namespace confounding {
 			.momentum_40d = nan,
 			.volatility_10d = nan,
 			.volatility_40d = nan,
-			.returns_next_close_long = 0,
-			.returns_next_close_short = 0,
-			.returns_24h_long = 0,
-			.returns_24h_short = 0,
-			.returns_48h_long = 0,
-			.returns_48h_short = 0,
-			.returns_72h_long = 0,
-			.returns_72h_short = 0
+			.returns_next_close = 0,
+			.returns_24h = 0,
+			.returns_48h = 0,
+			.returns_72h = 0
 		};
 		raw_intraday_records.push_back(intraday_record);
 	}

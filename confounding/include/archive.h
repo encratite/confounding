@@ -40,17 +40,13 @@ namespace confounding {
 		// daily_volatility(40 days)
 		T volatility_40d;
 		// All returns are stored as ticks rather than relative return or money
-		// Returns do contain slippage and commission and are specific to one side (long/short)
+		// Returns do not contain slippage and commission
 		// Returns to next daily close that lies at least 8 hours after the current point in time
-		int32_t returns_next_close_long;
-		int32_t returns_next_close_short;
+		int32_t returns_next_close;
 		// Returns for fixed holding periods of 24/48/72 hours
-		int32_t returns_24h_long;
-		int32_t returns_24h_short;
-		int32_t returns_48h_long;
-		int32_t returns_48h_short;
-		int32_t returns_72h_long;
-		int32_t returns_72h_short;
+		int32_t returns_24h;
+		int32_t returns_48h;
+		int32_t returns_72h;
 		// Missing: TP/SL-based returns
 	};
 

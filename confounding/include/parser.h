@@ -67,6 +67,8 @@ namespace confounding {
 		const std::vector<IntradayClose>& intraday_closes,
 		const std::deque<double>& recent_closes,
 		const std::deque<double>& recent_returns,
+		Money today_close,
+		Money tomorrow_close,
 		std::vector<RawIntradayRecord>& raw_intraday_records,
 		Archive& archive,
 		const ContractFilter& filter,

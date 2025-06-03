@@ -46,6 +46,10 @@ namespace confounding {
 		return static_cast<double>(_amount) * std::pow(1.0, -money_precision);
 	}
 
+	int32_t Money::operator-(const Money& other) const {
+		return static_cast<int32_t>(_amount - other._amount);
+	}
+
 	std::shared_ptr<char> read_file(const std::string& path) {
 		FILE* file = std::fopen(path.c_str(), "rb");
 		if (file == nullptr) {
@@ -124,6 +128,20 @@ namespace confounding {
 		return output;
 	}
 
+	std::string get_time_string(const Time& time) {
+		Date date = get_date(time);
+		TimeOfDay time_of_day = get_time_of_day(time);
+		std::string output = std::format(
+			"{:04}-{:02}-{:02} {:02}:{:02}",
+			static_cast<int>(date.year()),
+			static_cast<unsigned>(date.month()),
+			static_cast<unsigned>(date.day()),
+			static_cast<unsigned>(time_of_day.hours().count()),
+			static_cast<unsigned>(time_of_day.minutes().count())
+		);
+		return output;
+	}
+
 	double get_rate_of_change(double a, double b) {
 		if (a < 0 || b <= 0)
 			throw Exception("Invalid parameters for get_rate_of_change");
@@ -134,5 +152,11 @@ namespace confounding {
 		using namespace std::chrono;
 		auto days = local_days{date};
 		return time < days;
+	}
+
+	Money operator*(unsigned factor, const Money& money) {
+		int64_t amount = factor * money.to_int();
+		Money output(amount);
+		return amount;
 	}
 }
