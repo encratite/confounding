@@ -16,6 +16,7 @@
     <ClInclude Include="include\configuration\base.h" />
     <ClInclude Include="include\configuration\contracts.h" />
     <ClInclude Include="include\configuration\filters.h" />
+    <ClInclude Include="include\constants.h" />
     <ClInclude Include="include\contract.h" />
     <ClInclude Include="include\exception.h" />
     <ClInclude Include="include\filter.h" />

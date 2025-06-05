@@ -74,6 +74,23 @@ namespace confounding {
 		const ContractFilter& filter,
 		const Contract& contract
 	);
+	bool get_features(
+		const IntradayClose& record,
+		const std::vector<IntradayClose>& intraday_closes,
+		const std::deque<double>& recent_closes,
+		const std::deque<double>& recent_returns,
+		bool use_today,
+		RawIntradayRecord& raw_intraday_record
+	);
+	void get_returns(
+		const IntradayClose& record,
+		const std::vector<IntradayClose>& intraday_closes,
+		Money today_close,
+		Money tomorrow_close,
+		const Contract& contract,
+		bool use_today,
+		RawIntradayRecord& raw_intraday_record
+	);
 	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
 	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records);
 }

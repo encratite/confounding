@@ -43,8 +43,12 @@ namespace confounding {
 		// Returns do not contain slippage and commission
 		// Returns to next daily close that lies at least 8 hours after the current point in time
 		int32_t returns_next_close;
-		// Returns for fixed holding periods of 24/48/72 hours
+		// Returns for fixed holding periods for a certain number of hours
+		int32_t returns_20h;
+		int32_t returns_22h;
 		int32_t returns_24h;
+		int32_t returns_26h;
+		int32_t returns_28h;
 		int32_t returns_48h;
 		int32_t returns_72h;
 		// Missing: TP/SL-based returns
