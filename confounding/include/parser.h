@@ -92,5 +92,5 @@ namespace confounding {
 		RawIntradayRecord& raw_intraday_record
 	);
 	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
-	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records);
+	void add_nan_record(Time time, std::vector<RawIntradayRecord>& raw_intraday_records, Archive& archive);
 }

@@ -60,11 +60,7 @@ namespace confounding {
 	struct Archive {
 		std::string symbol; 
 		std::vector<DailyRecord> daily_records;
-		/*
-		Unlike daily records, intraday records do not have any timestamps of their own.
-		The time of individual records is derived from a pre-calculated data structure that maps Time -> std::size_t offsets into the array.
-		*/
-		Time first_intraday_time;
+		std::vector<Time> intraday_timestamps;
 		std::vector<IntradayRecord> intraday_records;
 	};
 }

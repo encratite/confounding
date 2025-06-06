@@ -171,8 +171,10 @@ namespace confounding {
 		const auto& configuration = Configuration::get();
 		auto reference_date = configuration.intraday_reference_date;
 		auto add_nan_records = [&]() {
-			for (unsigned i = 0; i < hours_per_day; i++)
-				add_nan_record(raw_intraday_records);
+			for (unsigned i = 0; i < hours_per_day; i++) {
+				Time time = get_time(reference_date) + std::chrono::hours{i};
+				add_nan_record(time, raw_intraday_records, archive);
+			}
 		};
 		for (; reference_date <= last_date; add_day(reference_date)) {
 			// Health check
@@ -244,7 +246,7 @@ namespace confounding {
 			for (const auto& record : today) {
 				while (reference_time < record.time) {
 					// Fill the gaps in the intraday data with NaN records
-					add_nan_record(raw_intraday_records);
+					add_nan_record(reference_time, raw_intraday_records, archive);
 					reference_time += std::chrono::hours{1};
 				}
 				generate_intraday_record(
@@ -348,7 +350,7 @@ namespace confounding {
 			raw_intraday_record
 		);
 		if (!success) {
-			add_nan_record(raw_intraday_records);
+			add_nan_record(record.time, raw_intraday_records, archive);
 			return;
 		}
 		get_returns(
@@ -360,8 +362,7 @@ namespace confounding {
 			use_today,
 			raw_intraday_record
 		);
-		if (raw_intraday_records.size() == 0)
-			archive.first_intraday_time = record.time;
+		archive.intraday_timestamps.push_back(record.time);
 		raw_intraday_records.push_back(raw_intraday_record);
 	}
 
@@ -458,7 +459,7 @@ namespace confounding {
 			auto get_matching_close = [&](std::size_t i) {
 				int32_t tick_delta = get_tick_delta(matching_records[i].close);
 				return tick_delta;
-				};
+			};
 			auto get_next_day = [&](int hours_offset) {
 				auto next_day_time = matching_records[0].time;
 				auto offset_time = next_day_time + std::chrono::hours{hours_offset};
@@ -472,8 +473,9 @@ namespace confounding {
 				if (iterator != intraday_closes.begin()) {
 					int32_t tick_delta = get_tick_delta(iterator->close);
 					return tick_delta;
-				} else
+				} else {
 					return intraday_invalid_returns;
+				}
 			};
 			raw_intraday_record.returns_20h = get_next_day(-4);
 			raw_intraday_record.returns_22h = get_next_day(-2);
@@ -501,7 +503,7 @@ namespace confounding {
 		return volatility;
 	}
 
-	void add_nan_record(std::vector<RawIntradayRecord>& raw_intraday_records) {
+	void add_nan_record(Time time, std::vector<RawIntradayRecord>& raw_intraday_records, Archive& archive) {
 		if (raw_intraday_records.size() == 0)
 			return;
 		constexpr float nan = std::numeric_limits<float>::signaling_NaN();
@@ -521,8 +523,9 @@ namespace confounding {
 			.returns_26h = intraday_invalid_returns,
 			.returns_28h = intraday_invalid_returns,
 			.returns_48h = intraday_invalid_returns,
-			.returns_72h = intraday_invalid_returns
+			.returns_72h = intraday_invalid_returns,
 		};
+		archive.intraday_timestamps.push_back(time);
 		raw_intraday_records.push_back(intraday_record);
 	}
 }
