@@ -34,63 +34,63 @@ namespace confounding {
 	typedef std::map<Date, std::vector<GlobexRecord>> GlobexRecordMap;
 	typedef std::map<IntradayRecordsKey, std::vector<IntradayClose>> IntradayRecordMap;
 
-	void parse_futures_all();
-	void parse_futures_single(const Contract& contract);
-	GlobexRecordMap read_daily_records(const std::string& symbol, const ContractFilter& filter);
-	IntradayRecordMap read_intraday_records(const std::string& symbol, const ContractFilter& filter);
-	std::string get_symbol_path(const std::string& symbol, const std::string& suffix);
-	void generate_archive(
-		std::optional<unsigned> f_number,
-		bool fy_record,
-		const std::string& symbol,
-		const GlobexRecordMap& daily_records,
-		const IntradayRecordMap& intraday_records,
-		const ContractFilter& filter,
-		const Contract& contract
-	);
-	GlobexRecord get_daily_globex_record(
-		Date date,
-		std::optional<unsigned> f_number,
-		bool fy_record,
-		const std::string& symbol,
-		const std::vector<GlobexRecord>& records,
-		Archive& archive
-	);
-	void update_recent_closes(
-		const GlobexRecord& daily_globex_record,
-		std::deque<double>& recent_closes,
-		std::deque<double>& recent_returns
-	);
-	void generate_intraday_record(
-		const IntradayClose& record,
-		Date date,
-		const std::vector<IntradayClose>& intraday_closes,
-		const std::deque<double>& recent_closes,
-		const std::deque<double>& recent_returns,
-		Money today_close,
-		Money tomorrow_close,
-		std::vector<RawIntradayRecord>& raw_intraday_records,
-		Archive& archive,
-		const ContractFilter& filter,
-		const Contract& contract
-	);
-	bool get_features(
-		const IntradayClose& record,
-		const std::vector<IntradayClose>& intraday_closes,
-		const std::deque<double>& recent_closes,
-		const std::deque<double>& recent_returns,
-		bool use_today,
-		RawIntradayRecord& raw_intraday_record
-	);
-	void get_returns(
-		const IntradayClose& record,
-		const std::vector<IntradayClose>& intraday_closes,
-		Money today_close,
-		Money tomorrow_close,
-		const Contract& contract,
-		bool use_today,
-		RawIntradayRecord& raw_intraday_record
-	);
-	double get_volatility(std::size_t n, const std::deque<double>& recent_returns);
-	void add_nan_record(Time time, std::vector<RawIntradayRecord>& raw_intraday_records, Archive& archive);
+	class ArchiveGenerator {
+	public:
+		ArchiveGenerator(
+			std::optional<unsigned> f_number,
+			bool fy_record,
+			const std::string& symbol,
+			const GlobexRecordMap& daily_records,
+			const IntradayRecordMap& intraday_records,
+			const ContractFilter& filter,
+			const Contract& contract
+		);
+
+		static void parse_futures();
+
+		void run();
+
+	private:
+		std::optional<unsigned> _f_number;
+		bool _fy_record;
+		const std::string& _symbol;
+		const GlobexRecordMap& _daily_records;
+		const IntradayRecordMap& _intraday_records;
+		const ContractFilter& _filter;
+		const Contract& _contract;
+		Archive _archive;
+		std::vector<RawIntradayRecord> _raw_intraday_records;
+		std::deque<double> _recent_closes;
+		std::deque<double> _recent_returns;
+		std::vector<IntradayClose> _today_closes;
+		std::vector<IntradayClose> _intraday_closes;
+		GlobexRecord _globex_today;
+		GlobexRecord _globex_tomorrow;
+
+		static void parse_single_contract(const Contract& contract);
+		static GlobexRecordMap read_daily_records(const std::string& symbol, const ContractFilter& filter);
+		static IntradayRecordMap read_intraday_records(const std::string& symbol, const ContractFilter& filter);
+		static std::string get_symbol_path(const std::string& symbol, const std::string& suffix);
+
+		bool get_globex_records(Date reference_date);
+		GlobexRecord get_daily_globex_record(
+			Date date,
+			const std::vector<GlobexRecord>& records
+		);
+		bool get_intraday_closes();
+		void update_recent_closes(const GlobexRecord& daily_globex_record);
+		void generate_intraday_record(const IntradayClose& record);
+		bool get_features(
+			const IntradayClose& record,
+			bool use_today,
+			RawIntradayRecord& raw_intraday_record
+		);
+		void get_returns(
+			const IntradayClose& record,
+			bool use_today,
+			RawIntradayRecord& raw_intraday_record
+		);
+		double get_volatility(std::size_t n);
+		void add_nan_record(Time time);
+	};
 }
