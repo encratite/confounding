@@ -1,8 +1,8 @@
 #include <mutex>
 
-#include "yaml.h"
-#include "configuration/contracts.h"
-#include "exception.h"
+#include "confounding/yaml.h"
+#include "confounding/configuration/contracts.h"
+#include "confounding/exception.h"
 
 namespace confounding {
 	namespace {

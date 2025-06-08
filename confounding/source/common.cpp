@@ -5,8 +5,8 @@
 #include <regex>
 #include <cmath>
 
-#include "common.h"
-#include "exception.h"
+#include "confounding/common.h"
+#include "confounding/exception.h"
 
 namespace confounding {
 	// The required minimum for 6J
@@ -46,7 +46,7 @@ namespace confounding {
 		return static_cast<double>(_amount) * std::pow(1.0, -money_precision);
 	}
 
-	int32_t Money::operator-(const Money& other) const {
+	int32_t Money::operator-(Money other) const {
 		return static_cast<int32_t>(_amount - other._amount);
 	}
 
@@ -118,7 +118,7 @@ namespace confounding {
 		return time_of_day;
 	}
 
-	std::string get_date_string(const Date& date) {
+	std::string get_date_string(Date date) {
 		std::string output = std::format(
 			"{:04}-{:02}-{:02}",
 			static_cast<int>(date.year()),
@@ -128,7 +128,7 @@ namespace confounding {
 		return output;
 	}
 
-	std::string get_time_string(const Time& time) {
+	std::string get_time_string(Time time) {
 		Date date = get_date(time);
 		TimeOfDay time_of_day = get_time_of_day(time);
 		std::string output = std::format(
@@ -148,13 +148,13 @@ namespace confounding {
 		return a / b - 1.0;
 	}
 
-	bool operator<(const Time& time, const Date& date) {
+	bool operator<(Time time, Date date) {
 		using namespace std::chrono;
 		auto days = local_days{date};
 		return time < days;
 	}
 
-	Money operator*(unsigned factor, const Money& money) {
+	Money operator*(unsigned factor, Money money) {
 		int64_t amount = factor * money.to_int();
 		Money output(amount);
 		return amount;

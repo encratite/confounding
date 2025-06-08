@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "contract.h"
+#include "confounding/contract.h"
 
 namespace confounding {
 	class ContractConfiguration {

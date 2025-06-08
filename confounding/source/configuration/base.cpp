@@ -1,8 +1,8 @@
 #include <mutex>
 
-#include "yaml.h"
-#include "configuration/base.h"
-#include "common.h"
+#include "confounding/yaml.h"
+#include "confounding/configuration/base.h"
+#include "confounding/common.h"
 
 namespace {
 	constexpr const char* configuration_file = "configuration.yaml";

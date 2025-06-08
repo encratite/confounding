@@ -15,7 +15,7 @@ namespace confounding {
 
 		int64_t to_int() const;
 		double to_double() const;
-		int32_t operator-(const Money& other) const;
+		int32_t operator-(Money other) const;
 
 	private:
 		// Encodes both the integer and the fractional portion of the price
@@ -37,11 +37,11 @@ namespace confounding {
 	Time get_time(Date date);
 	TimeOfDay get_time_of_day(const std::string& string);
 	TimeOfDay get_time_of_day(Time time);
-	std::string get_date_string(const Date& date);
-	std::string get_time_string(const Time& time);
+	std::string get_date_string(Date date);
+	std::string get_time_string(Time time);
 	double get_rate_of_change(double a, double b);
-	bool operator<(const Time& time, const Date& date);
-	Money operator*(unsigned factor, const Money& money);
+	bool operator<(Time time, Date date);
+	Money operator*(unsigned factor, Money money);
 
 	template<typename T>
 	T get_number(const std::string& string) {

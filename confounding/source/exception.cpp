@@ -1,4 +1,4 @@
-#include "exception.h"
+#include "confounding/exception.h"
 
 namespace confounding {
 	Exception::Exception(const std::string& message)

@@ -3,10 +3,10 @@
 #include <ranges>
 #include <format>
 
-#include "yaml.h"
-#include "configuration/filters.h"
-#include "exception.h"
-#include "common.h"
+#include "confounding/yaml.h"
+#include "confounding/configuration/filters.h"
+#include "confounding/exception.h"
+#include "confounding/common.h"
 
 namespace confounding {
 	namespace {

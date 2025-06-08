@@ -11,23 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\archive.h" />
-    <ClInclude Include="include\common.h" />
-    <ClInclude Include="include\configuration\base.h" />
-    <ClInclude Include="include\configuration\contracts.h" />
-    <ClInclude Include="include\configuration\filters.h" />
-    <ClInclude Include="include\constants.h" />
-    <ClInclude Include="include\contract.h" />
-    <ClInclude Include="include\exception.h" />
-    <ClInclude Include="include\filter.h" />
-    <ClInclude Include="include\globex.h" />
-    <ClInclude Include="include\manager.h" />
-    <ClInclude Include="include\parser.h" />
-    <ClInclude Include="include\types.h" />
-    <ClInclude Include="include\yaml.h" />
+    <ClInclude Include="include\confounding\archive.h" />
+    <ClInclude Include="include\confounding\common.h" />
+    <ClInclude Include="include\confounding\configuration\base.h" />
+    <ClInclude Include="include\confounding\configuration\contracts.h" />
+    <ClInclude Include="include\confounding\configuration\filters.h" />
+    <ClInclude Include="include\confounding\contract.h" />
+    <ClInclude Include="include\confounding\exception.h" />
+    <ClInclude Include="include\confounding\filter.h" />
+    <ClInclude Include="include\confounding\globex.h" />
+    <ClInclude Include="include\confounding\parser.h" />
+    <ClInclude Include="include\confounding\types.h" />
+    <ClInclude Include="include\confounding\yaml.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\archive.cpp" />
     <ClCompile Include="source\common.cpp" />
     <ClCompile Include="source\configuration\base.cpp" />
     <ClCompile Include="source\configuration\contracts.cpp" />
@@ -36,7 +33,6 @@
     <ClCompile Include="source\exception.cpp" />
     <ClCompile Include="source\filter.cpp" />
     <ClCompile Include="source\globex.cpp" />
-    <ClCompile Include="source\manager.cpp" />
     <ClCompile Include="source\parser.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

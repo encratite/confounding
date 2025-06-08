@@ -1,5 +1,5 @@
-#include "filter.h"
-#include "common.h"
+#include "confounding/filter.h"
+#include "confounding/common.h"
 
 namespace confounding {
 	bool ContractFilter::include_record(const Date& time, const GlobexCode& globex_code) const {

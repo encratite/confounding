@@ -11,8 +11,6 @@ namespace confounding {
 	struct DailyRecord {
 		Date date;
 		Money close;
-
-		DailyRecord(Date date, Money close);
 	};
 
 

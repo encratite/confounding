@@ -4,8 +4,8 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include "filter.h"
-#include "types.h"
+#include "confounding/filter.h"
+#include "confounding/types.h"
 
 namespace confounding {
 	class ContractFilterConfiguration {

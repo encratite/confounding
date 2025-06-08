@@ -12,13 +12,13 @@
 #include <fast-cpp-csv-parser/csv.h>
 #pragma warning(pop)
 
-#include "yaml.h"
-#include "parser.h"
-#include "configuration/base.h"
-#include "configuration/contracts.h"
-#include "configuration/filters.h"
-#include "common.h"
-#include "constants.h"
+#include "confounding/yaml.h"
+#include "confounding/parser.h"
+#include "confounding/configuration/base.h"
+#include "confounding/configuration/contracts.h"
+#include "confounding/configuration/filters.h"
+#include "confounding/common.h"
+#include "confounding/constants.h"
 
 namespace confounding {
 	namespace {
@@ -291,7 +291,10 @@ namespace confounding {
 				});
 			if (iterator == records.end())
 				throw Exception("Symbol {} lacks a daily FY record at {}", _symbol, get_date_string(date));
-			DailyRecord daily_record = DailyRecord(daily_globex_record.date, daily_globex_record.close);
+			DailyRecord daily_record{
+				.date = daily_globex_record.date,
+				.close = daily_globex_record.close
+			};
 			daily_globex_record = *iterator;
 			_archive.daily_records.push_back(daily_record);
 		}

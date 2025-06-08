@@ -21,46 +21,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\common.h">
+    <ClInclude Include="include\confounding\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\contract.h">
+    <ClInclude Include="include\confounding\contract.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\exception.h">
+    <ClInclude Include="include\confounding\exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\manager.h">
+    <ClInclude Include="include\confounding\manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\parser.h">
+    <ClInclude Include="include\confounding\parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\configuration\base.h">
+    <ClInclude Include="include\confounding\configuration\base.h">
       <Filter>Header Files\configuration</Filter>
     </ClInclude>
-    <ClInclude Include="include\configuration\contracts.h">
+    <ClInclude Include="include\confounding\configuration\contracts.h">
       <Filter>Header Files\configuration</Filter>
     </ClInclude>
-    <ClInclude Include="include\configuration\filters.h">
+    <ClInclude Include="include\confounding\configuration\filters.h">
       <Filter>Header Files\configuration</Filter>
     </ClInclude>
-    <ClInclude Include="include\filter.h">
+    <ClInclude Include="include\confounding\filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\types.h">
+    <ClInclude Include="include\confounding\types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\globex.h">
+    <ClInclude Include="include\confounding\globex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\yaml.h">
+    <ClInclude Include="include\confounding\yaml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\archive.h">
+    <ClInclude Include="include\confounding\archive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\constants.h">
+    <ClInclude Include="include\confounding\constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -98,5 +98,10 @@
     <ClCompile Include="source\archive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="chrono.natvis">
+      <Filter>Source Files</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

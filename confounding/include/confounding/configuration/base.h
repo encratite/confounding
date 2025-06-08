@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "types.h"
+#include "confounding/types.h"
 
 namespace confounding {
 	class Configuration {
