@@ -1,23 +1,26 @@
 #pragma once
 
 #include <string>
+#include <map>
+#include <deque>
 
-#include "common.h"
-#include "contract.h"
-#include "filter.h"
-#include "types.h"
-#include "globex.h"
-#include "archive.h"
+#include "confounding/exports.h"
+#include "confounding/common.h"
+#include "confounding/contract.h"
+#include "confounding/filter.h"
+#include "confounding/types.h"
+#include "confounding/globex.h"
+#include "confounding/archive.h"
 
 namespace confounding {
-	struct GlobexRecord {
+	struct CONFOUNDING_API GlobexRecord {
 		GlobexCode globex_code;
 		Date date;
 		Money close;
 		unsigned open_interest;
 	};
 
-	struct IntradayRecordsKey {
+	struct CONFOUNDING_API IntradayRecordsKey {
 		Date date;
 		GlobexCode globex_code;
 
@@ -26,7 +29,7 @@ namespace confounding {
 		bool operator<(const IntradayRecordsKey& key) const;
 	};
 
-	struct IntradayClose {
+	struct CONFOUNDING_API IntradayClose {
 		Time time;
 		Money close;
 	};
@@ -34,7 +37,7 @@ namespace confounding {
 	typedef std::map<Date, std::vector<GlobexRecord>> GlobexRecordMap;
 	typedef std::map<IntradayRecordsKey, std::vector<IntradayClose>> IntradayRecordMap;
 
-	class ArchiveGenerator {
+	class CONFOUNDING_API ArchiveGenerator {
 	public:
 		ArchiveGenerator(
 			std::optional<unsigned> f_number,

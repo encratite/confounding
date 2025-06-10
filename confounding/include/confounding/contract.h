@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include "common.h"
+#include "confounding/common.h"
 
 namespace confounding {
-	struct Contract {
+	struct CONFOUNDING_API Contract {
 		std::string symbol;
 		std::string name;
 		std::string currency;

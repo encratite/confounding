@@ -61,7 +61,7 @@ namespace confounding {
 		_contract(contract) {
 	}
 
-	void ArchiveGenerator::parse_futures() {
+	void CONFOUNDING_API ArchiveGenerator::parse_futures() {
 		const auto& contract_configuration = ContractConfiguration::get();
 		std::for_each(
 			std::execution::par,
@@ -223,7 +223,7 @@ namespace confounding {
 				time_string,
 				close_string
 			);
-			};
+		};
 		while (read_row()) {
 			GlobexCode globex_code = globex_string;
 			record.time = get_time(time_string);

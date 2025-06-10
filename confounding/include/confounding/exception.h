@@ -4,8 +4,10 @@
 #include <string>
 #include <format>
 
+#include "confounding/exports.h"
+
 namespace confounding {
-	class Exception: public std::runtime_error {
+	class CONFOUNDING_API Exception: public std::runtime_error {
 	public:
 		Exception(const std::string& message);
 

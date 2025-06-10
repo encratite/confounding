@@ -7,6 +7,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "confounding", "confounding\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natvis", "natvis\natvis.vcxproj", "{16F00B15-F4E1-4D4F-974A-8504B277A782}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "generate", "generate\generate.vcxproj", "{2F291934-E0B2-4F36-9D2F-12EB713FE5EF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6414BA7C-BE91-4CF2-BFFA-DD101934107A} = {6414BA7C-BE91-4CF2-BFFA-DD101934107A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +26,10 @@ Global
 		{16F00B15-F4E1-4D4F-974A-8504B277A782}.Debug|x64.Build.0 = Debug|x64
 		{16F00B15-F4E1-4D4F-974A-8504B277A782}.Release|x64.ActiveCfg = Release|x64
 		{16F00B15-F4E1-4D4F-974A-8504B277A782}.Release|x64.Build.0 = Release|x64
+		{2F291934-E0B2-4F36-9D2F-12EB713FE5EF}.Debug|x64.ActiveCfg = Debug|x64
+		{2F291934-E0B2-4F36-9D2F-12EB713FE5EF}.Debug|x64.Build.0 = Debug|x64
+		{2F291934-E0B2-4F36-9D2F-12EB713FE5EF}.Release|x64.ActiveCfg = Release|x64
+		{2F291934-E0B2-4F36-9D2F-12EB713FE5EF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

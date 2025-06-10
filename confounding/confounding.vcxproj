@@ -18,6 +18,7 @@
     <ClInclude Include="include\confounding\configuration\filters.h" />
     <ClInclude Include="include\confounding\contract.h" />
     <ClInclude Include="include\confounding\exception.h" />
+    <ClInclude Include="include\confounding\exports.h" />
     <ClInclude Include="include\confounding\filter.h" />
     <ClInclude Include="include\confounding\globex.h" />
     <ClInclude Include="include\confounding\parser.h" />
@@ -34,6 +35,9 @@
     <ClCompile Include="source\filter.cpp" />
     <ClCompile Include="source\globex.cpp" />
     <ClCompile Include="source\parser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="chrono.natvis" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -88,7 +92,7 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>26495</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26495; 4251; 4275</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,13 +107,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;CONFOUNDING_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CONFOUNDING_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <DisableSpecificWarnings>26495</DisableSpecificWarnings>
+      <DisableSpecificWarnings>26495; 4251; 4275</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

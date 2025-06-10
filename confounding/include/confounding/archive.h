@@ -4,11 +4,12 @@
 #include <vector>
 #include <cstdint>
 
-#include "common.h"
-#include "types.h"
+#include "confounding/exports.h"
+#include "confounding/common.h"
+#include "confounding/types.h"
 
 namespace confounding {
-	struct DailyRecord {
+	struct CONFOUNDING_API DailyRecord {
 		Date date;
 		Money close;
 	};
@@ -20,7 +21,7 @@ namespace confounding {
 	*/
 	template<typename T>
 	requires (std::same_as<T, float> || std::same_as<T, double>)
-	struct IntradayRecordT {
+	struct CONFOUNDING_API IntradayRecordT {
 		// close(t) / last_session_close(t - 8 h)
 		T momentum_1d;
 		// close(t) / last_session_close(t - 8 h - 1 day)
@@ -55,7 +56,7 @@ namespace confounding {
 	typedef IntradayRecordT<double> RawIntradayRecord;
 	typedef IntradayRecordT<float> IntradayRecord;
 
-	struct Archive {
+	struct CONFOUNDING_API Archive {
 		std::string symbol; 
 		std::vector<DailyRecord> daily_records;
 		std::vector<Time> intraday_timestamps;

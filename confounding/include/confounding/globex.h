@@ -4,8 +4,10 @@
 #include <optional>
 #include <istream>
 
+#include "confounding/exports.h"
+
 namespace confounding {
-	class GlobexCode {
+	class CONFOUNDING_API GlobexCode {
 	public:
 		std::optional<std::string> symbol;
 		std::optional<std::string> root;

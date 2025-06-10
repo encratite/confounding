@@ -4,13 +4,14 @@
 #include <optional>
 #include <set>
 
-#include "globex.h"
-#include "types.h"
+#include "confounding/exports.h"
+#include "confounding/globex.h"
+#include "confounding/types.h"
 
 namespace confounding {
 	typedef std::optional<std::set<char>> FilterMonths;
 
-	struct ContractFilter {
+	struct CONFOUNDING_API ContractFilter {
 		bool include_record(const Date& time, const GlobexCode& globex_code) const;
 
 		std::string barchart_symbol;
