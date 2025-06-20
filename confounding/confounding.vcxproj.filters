@@ -30,9 +30,6 @@
     <ClInclude Include="include\confounding\exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\confounding\manager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\confounding\parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,7 +57,7 @@
     <ClInclude Include="include\confounding\archive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\confounding\constants.h">
+    <ClInclude Include="include\confounding\exports.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -72,9 +69,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\exception.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\parser.cpp">
@@ -93,9 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\filter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\archive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

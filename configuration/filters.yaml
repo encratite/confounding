@@ -1,0 +1,238 @@
+# US indexes
+- ES:
+  legacy_cutoff: ESU02
+  session_end: 14:00
+- NQ:
+  legacy_cutoff: NQM01
+  session_end: 14:00
+- YM:
+  session_end: 14:00
+  liquid_hours_start: 05:00
+  liquid_hours_end: 17:00
+- QR:
+  exchange_symbol: RTY
+  session_end: 14:00
+  liquid_hours_start: 07:00
+  liquid_hours_end: 17:00
+
+# European indexes
+- DY:
+  exchange_symbol: FDXM
+  legacy_cutoff: DYM02
+  # Crude approximation, DST offset varies
+  session_end: 10:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 14:00
+- FA:
+  exchange_symbol: FESB
+  # Crude approximation, DST offset varies
+  session_end: 10:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 11:00
+- FX:
+  exchange_symbol: FESX
+  legacy_cutoff: FXU02
+  # Crude approximation, DST offset varies
+  session_end: 10:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 14:00
+
+# Other indexes
+- NL:
+  exchange_symbol: MNI
+  include_months: [H, M, U, Z]
+  # Crude approximation, DST offset varies
+  session_end: 01:00
+  liquid_hours_start: 06:00
+  liquid_hours_end: 14:00
+- AC:
+  exchange_symbol: FMWO
+  # Dubious
+  session_end: 10:00
+  liquid_hours_start: 06:00
+  liquid_hours_end: 14:00
+  features_only: true
+- AH:
+  exchange_symbol: AW
+  # Dubious
+  session_end: 12:00
+  features_only: true
+
+# Metals
+- GC:
+  legacy_cutoff: GCG06
+  # Rounded, really 12:30
+  session_end: 11:00
+  exclude_months: [F, H, K, N, U, V, X]
+- SI:
+  legacy_cutoff: SIH03
+  # Rounded, really 12:30
+  session_end: 11:00
+  include_months: [F, G, J, M, Q, V, X]
+  f_records_limit: 2
+- PL:
+  legacy_cutoff: PLN01
+  # Rounded, really 12:30
+  session_end: 11:00
+  first_filter_contract: PLG10
+  exclude_months: [F, J, N, V]
+  cutoff_date: 2002-08-08
+
+# Energies
+- CL:
+  legacy_cutoff: CLK03
+  cutoff_date: 2000-09-01
+  # Rounded, really 13:30
+  session_end: 12:00
+  liquid_hours_start: 03:00
+  liquid_hours_end: 13:00
+- NG:
+  legacy_cutoff: NGF04
+  # Rounded, really 13:30
+  session_end: 12:00
+  liquid_hours_start: 06:00
+  liquid_hours_end: 13:00
+- RB:
+  legacy_cutoff: RBJ06
+  # Rounded, really 13:30
+  session_end: 12:00
+  liquid_hours_start: 07:00
+  liquid_hours_end: 13:00
+- HO:
+  legacy_cutoff: HGK03
+  include_months: [H, K, N, U, Z]
+  # Rounded, really 13:30
+  session_end: 12:00
+  features_only: true
+
+# Currencies
+- A6:
+  exchange_symbol: 6A
+  legacy_cutoff: A6H01
+  first_filter_contract: A6J17
+  include_months: [H, M, U, Z]
+  cutoff_date: 2001-03-27
+  session_end: 15:00
+  liquid_hours_start: 19:00
+  liquid_hours_end: 14:00
+- B6:
+  exchange_symbol: 6B
+  legacy_cutoff: B6M03
+  first_filter_contract: B6J17
+  include_months: [H, M, U, Z]
+  session_end: 15:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 14:00
+- D6:
+  exchange_symbol: 6C
+  legacy_cutoff: D6H01
+  first_filter_contract: D6J17
+  include_months: [H, M, U, Z]
+  session_end: 15:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 15:00
+- E6:
+  exchange_symbol: 6E
+  legacy_cutoff: E6H02
+  first_filter_contract: E6J17
+  include_months: [H, M, U, Z]
+  cutoff_date: 2001-11-24
+  session_end: 15:00
+  liquid_hours_start: 02:00
+  liquid_hours_end: 15:00
+- J6:
+  exchange_symbol: 6J
+  legacy_cutoff: J6Z01
+  first_filter_contract: J6J17
+  include_months: [H, M, U, Z]
+  session_end: 15:00
+  liquid_hours_start: 19:00
+  liquid_hours_end: 14:00
+- N6:
+  exchange_symbol: 6N
+  session_end: 15:00
+  liquid_hours_start: 02:00
+  liquid_hours_end: 14:00
+- S6:
+  exchange_symbol: 6S
+  legacy_cutoff: S6H02
+  first_filter_contract: S6J17
+  include_months: [H, M, U, Z]
+  session_end: 15:00
+  liquid_hours_start: 02:00
+  liquid_hours_end: 14:00
+- T6:
+  exchange_symbol: 6Z
+  cutoff_date: 2000-05-10
+  include_months: [H, M, U, Z]
+  session_end: 15:00
+  features_only: true
+
+# US bonds
+- ZB:
+  legacy_cutoff: ZBM02
+  cutoff_date: 2004-11-12
+  session_end: 15:00
+- ZN:
+  legacy_cutoff: ZNU01
+  cutoff_date: 2004-11-11
+  session_end: 15:00
+  enable_fy_records: false
+- ZF:
+  legacy_cutoff: ZFM02
+  session_end: 15:00
+- ZT:
+  legacy_cutoff: ZTH02
+  session_end: 15:00
+  enable_fy_records: false
+
+# German bonds
+- GG:
+  exchange_symbol: FGBL
+  legacy_cutoff: GGZ01
+  # It's really 22:00 CET
+  session_end: 12:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 12:00
+- HR:
+  exchange_symbol: FGBM
+  legacy_cutoff: HRZ01
+  # It's really 22:00 CET
+  session_end: 12:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 12:00
+- HF:
+  exchange_symbol: FGBS
+  legacy_cutoff: HFZ01
+  # It's really 22:00 CET
+  session_end: 12:00
+  liquid_hours_start: 01:00
+  liquid_hours_end: 12:00
+
+# Volatility
+- DV:
+  exchange_symbol: V2TX
+  # Crude approximation, DST offset varies
+  session_end: 10:00
+  liquid_hours_start: 02:00
+  liquid_hours_end: 10:00
+- VI:
+  exchange_symbol: VX
+  enable_fy_records: false
+  session_end: 14:00
+  liquid_hours_start: 07:00
+  liquid_hours_end: 15:00
+
+# Crypto
+- BA:
+  exchange_symbol: MBT
+  # CME uses NYSE closing time for crypto settlement
+  session_end: 14:00
+  liquid_hours_start: 04:00
+  liquid_hours_end: 21:00
+- TA:
+  exchange_symbol: MET
+  # CME uses NYSE closing time for crypto settlement
+  session_end: 14:00
+  liquid_hours_start: 07:00
+  liquid_hours_end: 15:00

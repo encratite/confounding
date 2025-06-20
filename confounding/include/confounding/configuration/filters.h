@@ -22,6 +22,6 @@ namespace confounding {
 
 		void load();
 		static FilterMonths get_filter_months(const std::string& name, const YAML::Node& entry);
-		static TimeOfDay get_time_of_day(const std::string& key, const YAML::iterator::value_type& entry);
+		static std::optional<TimeOfDay> get_time_of_day(const std::string& key, const YAML::iterator::value_type& entry);
 	};
 }

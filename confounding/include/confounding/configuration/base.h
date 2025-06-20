@@ -8,7 +8,7 @@ namespace confounding {
 	class Configuration {
 	public:
 		std::string barchart_directory;
-		Date intraday_reference_date;
+		Date reference_date;
 
 		Configuration();
 

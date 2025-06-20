@@ -25,7 +25,8 @@ namespace confounding {
 		FilterMonths exclude_months;
 		std::optional<Date> cutoff_date;
 		TimeOfDay session_end;
-		TimeOfDay liquid_hours_start;
-		TimeOfDay liquid_hours_end;
+		std::optional<TimeOfDay> liquid_hours_start;
+		std::optional<TimeOfDay> liquid_hours_end;
+		bool features_only;
 	};
 }

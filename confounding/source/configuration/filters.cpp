@@ -43,7 +43,7 @@ namespace confounding {
 		if (!doc.IsSequence())
 			throw Exception("The contract filter configuration file must consist of a sequence at the top level");
 		for (const auto& entry : doc) {
-			auto barchart_symbol = entry["barchart_symbol"].as<std::string>();
+			auto barchart_symbol = entry.as<std::string>();
 			auto exchange_symbol = entry["exchange_symbol"].as<std::optional<std::string>>();
 			if (!exchange_symbol)
 				exchange_symbol = barchart_symbol;
@@ -59,13 +59,22 @@ namespace confounding {
 			auto exclude_months = get_filter_months("exclude_months", entry);
 			std::optional<Date> cutoff_date;
 			auto cutoff_date_entry = entry["cutoff_date"];
-			auto session_end = get_time_of_day("session_end", entry);
-			auto liquid_hours_start = get_time_of_day("liquid_hours_start", entry);
-			auto liquid_hours_end = get_time_of_day("liquid_hours_end", entry);
 			if (cutoff_date_entry) {
 				std::string cutoff_date_string = cutoff_date_entry.as<std::string>();
 				cutoff_date = get_date(cutoff_date_string);
 			}
+			auto session_end_opt = get_time_of_day("session_end", entry);
+			if (session_end_opt == std::nullopt)
+				throw Exception("Session end missing for symbol {}", barchart_symbol);
+			auto session_end = *session_end_opt;
+			auto liquid_hours_start = get_time_of_day("liquid_hours_start", entry);
+			auto liquid_hours_end = get_time_of_day("liquid_hours_end", entry);
+			if (liquid_hours_start.has_value() != liquid_hours_end.has_value())
+				throw Exception("Invalid combination of liquid_hours_start and liquid_hours_end for symbol {}", barchart_symbol);
+			auto features_only_entry = entry["features_only"];
+			bool features_only = false;
+			if (features_only_entry)
+				features_only = features_only_entry.as<bool>();
 			ContractFilter filter{
 				.barchart_symbol = barchart_symbol,
 				.exchange_symbol = *exchange_symbol,
@@ -79,7 +88,8 @@ namespace confounding {
 				.cutoff_date = cutoff_date,
 				.session_end = session_end,
 				.liquid_hours_start = liquid_hours_start,
-				.liquid_hours_end = liquid_hours_end
+				.liquid_hours_end = liquid_hours_end,
+				.features_only = features_only,
 			};
 			_filters.push_back(std::move(filter));
 		}
@@ -96,9 +106,13 @@ namespace confounding {
 			return std::nullopt;
 	}
 
-	TimeOfDay ContractFilterConfiguration::get_time_of_day(const std::string& key, const YAML::iterator::value_type& entry) {
-		std::string time_of_day_string = entry[key].as<std::string>();
-		TimeOfDay time_of_day = confounding::get_time_of_day(time_of_day_string);
-		return time_of_day;
+	std::optional<TimeOfDay> ContractFilterConfiguration::get_time_of_day(const std::string& key, const YAML::iterator::value_type& entry) {
+		auto node = entry[key];
+		if (node) {
+			std::string time_of_day_string = node.as<std::string>();
+			TimeOfDay time_of_day = confounding::get_time_of_day(time_of_day_string);
+			return time_of_day;
+		} else
+			return std::nullopt;
 	}
 }

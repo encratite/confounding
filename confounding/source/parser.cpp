@@ -24,7 +24,6 @@ namespace confounding {
 	namespace {
 		constexpr unsigned default_f_records_limit = 3;
 		constexpr unsigned hours_per_day = 24;
-		constexpr Date first_intraday_date{std::chrono::year{2008}, std::chrono::month{1}, std::chrono::day{1}};
 		constexpr int intraday_max_holding_days = 3;
 		constexpr std::size_t recent_closes_window_size = 40;
 		constexpr std::size_t recent_returns_window_size = recent_closes_window_size;
@@ -76,15 +75,15 @@ namespace confounding {
 		// at the end of the function because the archive will be freed anyway
 		_archive.daily_records.reserve(_daily_records.size());
 		const auto& last_date = _daily_records.rbegin()->first;
-		auto days1 = std::chrono::sys_days{first_intraday_date};
+		const auto& configuration = Configuration::get();
+		auto reference_date = configuration.reference_date;
+		auto days1 = std::chrono::sys_days{reference_date};
 		auto days2 = std::chrono::sys_days{last_date};
 		std::chrono::days days_diff = days2 - days1;
 		std::size_t daily_records_reserve = days_diff.count();
 		std::size_t intraday_records_reserve = hours_per_day * daily_records_reserve;
 		_raw_intraday_records.reserve(intraday_records_reserve);
 		std::map<Date, GlobexRecord> selected_daily_records;
-		const auto& configuration = Configuration::get();
-		auto reference_date = configuration.intraday_reference_date;
 		auto add_nan_records = [&]() {
 			for (unsigned i = 0; i < hours_per_day; i++) {
 				Time time = get_time(reference_date) + std::chrono::hours{i};
@@ -184,7 +183,7 @@ namespace confounding {
 				close_string,
 				record.open_interest
 			);
-			};
+		};
 		while (read_row()) {
 			record.globex_code = GlobexCode(globex_string);
 			record.date = get_date(date_string);
@@ -215,8 +214,8 @@ namespace confounding {
 		std::string time_string;
 		std::string close_string;
 		IntradayRecordMap intraday_records;
-		auto liquid_hours_start = filter.liquid_hours_start.to_duration();
-		auto liquid_hours_end = filter.liquid_hours_end.to_duration();
+		auto liquid_hours_start = filter.liquid_hours_start;
+		auto liquid_hours_end = filter.liquid_hours_end;
 		auto read_row = [&]() {
 			return csv.read_row(
 				globex_string,
@@ -230,7 +229,19 @@ namespace confounding {
 			record.close = Money(close_string);
 			auto midnight = std::chrono::floor<std::chrono::days>(record.time);
 			auto hours_since_midnight = record.time - midnight;
-			if (hours_since_midnight >= liquid_hours_start && hours_since_midnight < liquid_hours_end) {
+			bool add;
+			if (liquid_hours_start.has_value() && liquid_hours_end.has_value()) {
+				auto start_duration = liquid_hours_start->to_duration();
+				auto end_duration = liquid_hours_end->to_duration();
+				if (start_duration > end_duration)
+					std::swap(start_duration, end_duration);
+				add =
+					hours_since_midnight >= start_duration &&
+					hours_since_midnight < end_duration;
+			} else {
+				add = true;
+			}
+			if (add) {
 				Date date = get_date(record.time);
 				IntradayRecordsKey key(date, globex_code);
 				intraday_records[key].push_back(record);
@@ -445,7 +456,7 @@ namespace confounding {
 		raw_intraday_record.returns_28h = intraday_invalid_returns;
 		raw_intraday_record.returns_48h = intraday_invalid_returns;
 		raw_intraday_record.returns_72h = intraday_invalid_returns;
-		if (matching_records.size() == 3) {
+		if (!_filter.features_only && matching_records.size() == 3) {
 			auto get_matching_close = [&](std::size_t i) {
 				int32_t tick_delta = get_tick_delta(matching_records[i].close);
 				return tick_delta;
